@@ -201,3 +201,49 @@ test-swipe-toggle:
 # Highlight border fix testing
 test-highlight-border:
 	@open http://localhost:8000/tests/test_highlight_border_fix.html || xdg-open http://localhost:8000/tests/test_highlight_border_fix.html
+
+# ===== PROGRESSIVE GAMEPLAY TEST SUITE =====
+# Mobile-first cross-platform testing for progressive gameplay system
+
+# Mobile-first progressive testing
+test-progressive-mobile:
+	@open http://localhost:8000/tests/mobile_progressive_test.html || xdg-open http://localhost:8000/tests/mobile_progressive_test.html
+
+# Desktop enhancement testing
+test-progressive-desktop:
+	@open http://localhost:8000/tests/desktop_progressive_test.html || xdg-open http://localhost:8000/tests/desktop_progressive_test.html
+
+# Deck discovery system testing
+test-deck-discovery:
+	@open http://localhost:8000/tests/deck_discovery_test.html || xdg-open http://localhost:8000/tests/deck_discovery_test.html
+
+# Card learning system testing
+test-card-states:
+	@open http://localhost:8000/tests/card_states_test.html || xdg-open http://localhost:8000/tests/card_states_test.html
+
+# Animation system testing
+test-animations:
+	@open http://localhost:8000/tests/animations_test.html || xdg-open http://localhost:8000/tests/animations_test.html
+
+# PWA functionality testing
+test-pwa-progressive:
+	@open http://localhost:8000/tests/pwa_test.html || xdg-open http://localhost:8000/tests/pwa_test.html
+
+# Performance testing
+test-performance:
+	@open http://localhost:8000/tests/performance_test.html || xdg-open http://localhost:8000/tests/performance_test.html
+
+# Automated progressive test suite
+test-all-progressive:
+	@echo "Running comprehensive progressive gameplay tests..."
+	@make test-progressive-mobile
+	@sleep 2
+	@make test-progressive-desktop
+	@sleep 2
+	@make test-deck-discovery
+	@sleep 2
+	@make test-card-states
+	@sleep 2
+	@make test-animations
+	@sleep 2
+	@make test-pwa-progressive

@@ -3,4 +3,198 @@ description:
 globs: 
 alwaysApply: true
 ---
+# Progressive Gameplay Rules - Card Blaster Enhanced Learning System
 
+## Development Philosophy
+- **Mobile-First Implementation**: Always implement mobile experience before desktop enhancements
+- **Touch-First Interaction Design**: Swipe, tap, and gesture controls as primary interface
+- **60 FPS Performance**: Optimized for mobile devices with desktop enhancement
+- **PWA by Default**: Progressive Web App functionality built into every feature
+- **Unified Input Architecture**: Single methods handle touch, mouse, and keyboard events
+
+## Core Game Mechanics Implementation
+
+### Card Learning State System
+The progressive learning system follows this state machine:
+- **New Card**: Never seen before → correct = learned, wrong = struggling
+- **Struggling Card**: Got wrong at least once → needs 2 consecutive correct to become learned
+- **Learned Card**: Removed from rotation, replaced by next level card
+- **Consecutive Counter**: Resets to 0 on any wrong answer
+
+Reference implementation in [docs/progressive_gameplay_spec.md](mdc:docs/progressive_gameplay_spec.md)
+
+### Multi-Deck Architecture
+- Auto-discovery of `*_cards.json` files in [assets/](mdc:assets) directory
+- Each deck must include metadata section with deck_name, max_level, available_levels
+- Difficulty levels populate dynamically based on deck capabilities
+- Example decks: [assets/data_science_cards.json](mdc:assets/data_science_cards.json), [assets/chinese_language_cards.json](mdc:assets/chinese_language_cards.json)
+
+### Enhanced Scoring & Lives System
+- **Starting Lives**: 5 lives per game session
+- **Scoring**: +100 points per correct answer only
+- **Life Loss**: -1 for wrong answer, -1 for correct answer hitting bottom
+- **Life Gain**: +1 for every 1000 points earned
+- **Game Over**: 0 lives triggers game over overlay
+- **Victory**: All cards mastered triggers victory celebration
+
+## Mobile-First Development Requirements
+
+### Touch Controls (Primary)
+- **Ship Movement**: Swipe left/right or tap left/right zones
+- **Projectile Firing**: Tap game board or swipe down for continuous fire
+- **Pause/Resume**: Tap scoreboard area
+- **Menu Navigation**: Touch-friendly dropdowns and buttons (44px+ targets)
+
+### Desktop Enhancement (Secondary)
+- **Keyboard Controls**: Arrow keys, WASD, spacebar for firing
+- **Mouse Controls**: Click zones, hover effects, precision targeting
+- **Advanced Features**: Keyboard shortcuts, bulk operations, detailed analytics
+
+### Responsive Design Breakpoints
+- **Mobile Primary**: 320px-428px screens (touch-first design)
+- **Tablet**: 768px-1023px (hybrid touch/mouse)
+- **Desktop**: 1024px+ (mouse/keyboard enhanced)
+
+## Testing Requirements
+
+### Phase 0: Foundation Testing
+Create these test files in [tests/](mdc:tests) directory:
+- `mobile_progressive_test.html` - Touch event simulation and mobile viewport testing
+- `desktop_progressive_test.html` - Keyboard/mouse simulation and desktop layout
+- `deck_discovery_test.html` - Multi-deck system and metadata parsing
+- `card_states_test.html` - Learning algorithm and state transitions
+- `animations_test.html` - Level completion and card mastery celebrations
+- `pwa_test.html` - Progressive Web App installation and offline functionality
+
+### Visual Verification Protocol
+1. **Mobile Test First**: Verify touch interactions on 320px-428px viewport
+2. **Desktop Enhancement**: Add keyboard/mouse controls while maintaining mobile
+3. **Cross-Platform**: Test on mobile browsers (Safari, Chrome) and desktop browsers
+4. **Performance**: Maintain 60 FPS on mobile devices during gameplay
+5. **PWA**: Test installation on iOS Safari and Android Chrome
+
+## Implementation Phases
+
+### Phase 0: Cross-Platform Environment Setup
+- Mobile-first test harness with touch event simulation
+- PWA manifest and service worker setup
+- Deck auto-discovery system implementation
+- Cross-platform debugging tools
+
+### Phase 1: Card Learning State System
+- Mobile-first card state visualization (New/Struggling/Learned indicators)
+- Learning algorithm implementation with consecutive counter
+- Cross-platform state persistence (localStorage + IndexedDB)
+- Performance optimization for mobile
+
+### Phase 2: Multi-Deck Selection System
+- Touch-friendly deck selection dropdown
+- Dynamic difficulty level population
+- Metadata processing and validation
+- Desktop enhancement with keyboard navigation
+
+### Phase 3: Enhanced Scoring & Lives System
+- Mobile-optimized HUD with heart icons for lives
+- Visual feedback for scoring (+100 points animation)
+- Life loss/gain animations and celebrations
+- Game over and victory overlays
+
+### Phase 4: Level Completion Animation System
+- Tetris-inspired level completion animations
+- Card mastery celebration system
+- Haptic feedback integration (navigator.vibrate)
+- Performance optimization for mobile devices
+
+### Phase 5: PWA & Cross-Platform Integration
+- Full Progressive Web App implementation
+- Offline card deck caching with service worker
+- Cross-platform installation testing
+- Background sync for progress persistence
+
+### Phase 6: Performance Optimization & Polish
+- 60 FPS optimization across all devices
+- Comprehensive accessibility implementation (WCAG compliance)
+- Cross-browser compatibility testing
+- Final performance tuning and polish
+
+## File Structure and References
+
+### Core Game Files
+- Main game: [index.html](mdc:index.html) - Current Card Blaster implementation
+- Tetris reference: [tetris_index.html](mdc:tetris_index.html) - Animation inspiration
+- Development plan: [docs/progressive_gameplay_todo.md](mdc:docs/progressive_gameplay_todo.md)
+- Game specification: [docs/progressive_gameplay_spec.md](mdc:docs/progressive_gameplay_spec.md)
+
+### Card Deck Assets
+- Data Science: [assets/data_science_cards.json](mdc:assets/data_science_cards.json)
+- Chinese Language: [assets/chinese_language_cards.json](mdc:assets/chinese_language_cards.json)
+- Auto-discovery pattern: `assets/*_cards.json`
+
+### Development Tools
+- Build commands: [Makefile](mdc:Makefile) - Cross-platform development commands
+- Test directory: [tests/](mdc:tests) - Visual verification and testing tools
+
+## Makefile Commands for Progressive Development
+
+```bash
+# Mobile-first testing
+make test-progressive-mobile    # Touch interactions and mobile viewport
+make test-progressive-desktop   # Keyboard/mouse and desktop layout
+make test-deck-discovery       # Multi-deck system testing
+make test-card-states         # Learning algorithm testing
+make test-animations          # Level completion and celebrations
+make test-pwa                # Progressive Web App functionality
+make test-performance        # 60 FPS and mobile optimization
+```
+
+## Success Criteria
+
+### Mobile Success Criteria (Primary)
+- Touch controls work smoothly (tap, swipe, long press)
+- Maintains 60 FPS on mobile devices during gameplay
+- Perfect responsive layout on 320px-428px screens
+- PWA installable and works offline on mobile
+- WCAG compliant touch interactions
+- Efficient battery usage during extended play
+
+### Desktop Enhancement Criteria (Secondary)
+- Full keyboard control with shortcuts
+- Enhanced hover effects and precision controls
+- Effective use of larger screen real estate
+- Advanced functionality and analytics
+- Enhanced performance on desktop hardware
+- Consistent experience across desktop browsers
+
+### Unified System Criteria (Essential)
+- Sophisticated card learning state management works flawlessly
+- Automatic deck discovery and selection
+- Progress persistence across sessions and devices
+- Smooth advancement through difficulty levels
+- Comprehensive learning analytics and statistics
+- Satisfying visual feedback and animations across platforms
+
+## Development Rules
+
+### Mobile-First Implementation Rules
+1. Always implement mobile experience before desktop
+2. Test touch interactions before keyboard/mouse
+3. Optimize for 320px-428px screens first
+4. Ensure 60 FPS performance on mobile devices
+5. Implement PWA features by default
+6. Use unified input methods for all interactions
+
+### Cross-Platform Testing Rules
+1. Visual verification required on both mobile and desktop
+2. Performance testing mandatory for both platforms
+3. Accessibility compliance required across platforms
+4. State persistence must work on all browsers
+5. PWA functionality must work on iOS and Android
+6. Offline capability required for core functionality
+
+### Quality Assurance Rules
+1. Every feature must have mobile and desktop tests
+2. Performance monitoring required at every phase
+3. User experience validation on real devices
+4. Cross-browser compatibility verification
+5. Accessibility testing with screen readers
+6. PWA installation testing on multiple platforms

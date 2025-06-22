@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Cache-busting headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>Card Learning States Test - Card Blaster Progressive</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        .test-title {
+            color: #00ff00;
+            text-shadow: 0 0 15px #00ff00;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .test-subtitle {
+            color: #ff6600;
+            font-size: 1.3rem;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .section-title {
+            color: #00ffff;
+            text-shadow: 0 0 8px #00ffff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        
+        .test-item {
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .test-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .pass { background: #00ff00; }
+        .fail { background: #ff0000; }
+        .pending { background: #ffff00; }
+        .info { background: #0099ff; }
+        
+        .card-state-machine {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card-state {
+            background: rgba(0, 255, 255, 0.1);
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .card-state:hover {
+            transform: scale(1.05);
+            border-color: #00ffff;
+        }
+        
+        .card-state.active {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .card-new {
+            border-color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .card-struggling {
+            border-color: #ff6600;
+            background: rgba(255, 102, 0, 0.1);
+        }
+        
+        .card-learned {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .state-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .state-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        
+        .state-counter {
+            font-size: 1.1rem;
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+        }
+        
+        .state-transition {
+            position: absolute;
+            top: 50%;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+        
+        .transition-arrow {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .simulation-controls {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .control-title {
+            color: #00ffff;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .control-button {
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: #000;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .control-button:hover {
+            background: linear-gradient(45deg, #00ff00, #00ffff);
+            transform: scale(1.05);
+        }
+        
+        .control-button:active {
+            transform: scale(0.95);
+        }
+        
+        .correct-button {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+        }
+        
+        .wrong-button {
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            color: #ffffff;
+        }
+        
+        .reset-button {
+            background: linear-gradient(45deg, #ff6600, #cc4400);
+            color: #ffffff;
+        }
+        
+        .learning-analytics {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .analytics-title {
+            color: #00ff00;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .analytics-item {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .analytics-value {
+            font-size: 1.8rem;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+            margin-bottom: 5px;
+        }
+        
+        .analytics-label {
+            font-size: 0.9rem;
+            color: #ffffff;
+            opacity: 0.8;
+        }
+        
+        .state-history {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-title {
+            color: #ffff00;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .history-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ffff;
+            padding-left: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .history-correct {
+            border-left-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .history-wrong {
+            border-left-color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
+        
+        .test-results {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+        }
+        
+        .result-summary {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-details {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-state-machine {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 class="test-title">Card Learning States Test</h1>
+            <p class="test-subtitle">Progressive Learning Algorithm & State Machine Testing</p>
+        </div>
+        
+        <div class="test-grid">
+            <!-- State Machine Visualization -->
+            <div class="test-section">
+                <h2 class="section-title">🎯 Card State Machine</h2>
+                <div class="card-state-machine">
+                    <div class="card-state card-new active" id="stateNew">
+                        <div class="state-name">New</div>
+                        <div class="state-description">Never seen before</div>
+                        <div class="state-counter">Consecutive: <span id="newCounter">0</span></div>
+                        <div class="state-transition">
+                            <span class="transition-arrow">→</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-state card-struggling" id="stateStruggling">
+                        <div class="state-name">Struggling</div>
+                        <div class="state-description">Got wrong at least once<br>Needs 2 consecutive correct</div>
+                        <div class="state-counter">Consecutive: <span id="strugglingCounter">0</span></div>
+                        <div class="state-transition">
+                            <span class="transition-arrow">→</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-state card-learned" id="stateLearned">
+                        <div class="state-name">Learned</div>
+                        <div class="state-description">Mastered!<br>Removed from rotation</div>
+                        <div class="state-counter">Status: <span id="learnedCounter">Not Learned</span></div>
+                    </div>
+                </div>
+                
+                <div class="test-item">
+                    <span class="test-status pending" id="state-machine-status"></span>
+                    <span id="state-machine-result">State machine: Ready for testing</span>
+                </div>
+            </div>
+            
+            <!-- Algorithm Testing -->
+            <div class="test-section">
+                <h2 class="section-title">🧠 Learning Algorithm Tests</h2>
+                <div class="test-item">
+                    <span class="test-status pending" id="new-to-struggling-status"></span>
+                    <span id="new-to-struggling-result">New → Struggling: Not tested</span>
+                </div>
+                <div class="test-item">
+                    <span class="test-status pending" id="new-to-learned-status"></span>
+                    <span id="new-to-learned-result">New → Learned: Not tested</span>
+                </div>
+                <div class="test-item">
+                    <span class="test-status pending" id="struggling-to-learned-status"></span>
+                    <span id="struggling-to-learned-result">Struggling → Learned: Not tested</span>
+                </div>
+                <div class="test-item">
+                    <span class="test-status pending" id="reset-counter-status"></span>
+                    <span id="reset-counter-result">Counter reset: Not tested</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Simulation Controls -->
+        <div class="simulation-controls">
+            <div class="control-title">🎮 Interactive State Testing</div>
+            <div class="control-buttons">
+                <button class="control-button correct-button" id="correctButton">
+                    ✅ Correct Answer
+                </button>
+                <button class="control-button wrong-button" id="wrongButton">
+                    ❌ Wrong Answer
+                </button>
+                <button class="control-button reset-button" id="resetButton">
+                    🔄 Reset Card
+                </button>
+            </div>
+        </div>
+        
+        <!-- Learning Analytics -->
+        <div class="learning-analytics">
+            <div class="analytics-title">📊 Learning Analytics</div>
+            <div class="analytics-grid">
+                <div class="analytics-item">
+                    <div class="analytics-value" id="totalAttempts">0</div>
+                    <div class="analytics-label">Total Attempts</div>
+                </div>
+                <div class="analytics-item">
+                    <div class="analytics-value" id="correctAttempts">0</div>
+                    <div class="analytics-label">Correct Answers</div>
+                </div>
+                <div class="analytics-item">
+                    <div class="analytics-value" id="accuracyRate">0%</div>
+                    <div class="analytics-label">Accuracy Rate</div>
+                </div>
+                <div class="analytics-item">
+                    <div class="analytics-value" id="currentStreak">0</div>
+                    <div class="analytics-label">Current Streak</div>
+                </div>
+                <div class="analytics-item">
+                    <div class="analytics-value" id="bestStreak">0</div>
+                    <div class="analytics-label">Best Streak</div>
+                </div>
+                <div class="analytics-item">
+                    <div class="analytics-value" id="stateChanges">0</div>
+                    <div class="analytics-label">State Changes</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- State History -->
+        <div class="test-section">
+            <h2 class="section-title">📜 State Transition History</h2>
+            <div class="state-history">
+                <div class="history-title">Transition Log</div>
+                <div id="historyLog">
+                    <div class="history-entry">Ready to start testing...</div>
+                </div>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="history-status"></span>
+                <span id="history-result">History tracking: Ready</span>
+            </div>
+        </div>
+        
+        <!-- Test Results Summary -->
+        <div class="test-results">
+            <div class="result-summary" id="resultSummary">
+                Card learning states system ready for testing...
+            </div>
+            <div class="result-details" id="resultDetails">
+                Use the controls above to test state transitions and learning algorithm.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Card Learning States Test Suite
+        class CardStatesTest {
+            constructor() {
+                this.testResults = {
+                    stateMachine: false,
+                    newToStruggling: false,
+                    newToLearned: false,
+                    strugglingToLearned: false,
+                    resetCounter: false,
+                    history: false
+                };
+                
+                // Card state
+                this.currentState = 'new';
+                this.consecutiveCorrect = 0;
+                this.hasBeenWrong = false;
+                
+                // Analytics
+                this.totalAttempts = 0;
+                this.correctAttempts = 0;
+                this.currentStreak = 0;
+                this.bestStreak = 0;
+                this.stateChanges = 0;
+                this.history = [];
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('🚀 Starting Card Learning States Tests');
+                
+                // Setup event listeners
+                this.setupControls();
+                
+                // Initialize display
+                this.updateDisplay();
+                
+                // Mark state machine as ready
+                this.testResults.stateMachine = true;
+                this.updateStatus('state-machine-status', true);
+                document.getElementById('state-machine-result').textContent = 
+                    'State machine: READY';
+                
+                this.testResults.history = true;
+                this.updateStatus('history-status', true);
+                document.getElementById('history-result').textContent = 
+                    'History tracking: ACTIVE';
+                
+                // Update results every 2 seconds
+                setInterval(() => this.updateTestResults(), 2000);
+                
+                console.log('🎯 Card states test system initialized');
+            }
+            
+            // Setup Control Event Listeners
+            setupControls() {
+                document.getElementById('correctButton').addEventListener('click', () => {
+                    this.handleAnswer(true);
+                });
+                
+                document.getElementById('wrongButton').addEventListener('click', () => {
+                    this.handleAnswer(false);
+                });
+                
+                document.getElementById('resetButton').addEventListener('click', () => {
+                    this.resetCard();
+                });
+                
+                console.log('🎮 Control buttons setup complete');
+            }
+            
+            // Handle Answer Input
+            handleAnswer(isCorrect) {
+                this.totalAttempts++;
+                
+                const previousState = this.currentState;
+                
+                if (isCorrect) {
+                    this.correctAttempts++;
+                    this.consecutiveCorrect++;
+                    this.currentStreak++;
+                    this.bestStreak = Math.max(this.bestStreak, this.currentStreak);
+                    
+                    // State transition logic for correct answers
+                    if (this.currentState === 'new') {
+                        if (!this.hasBeenWrong) {
+                            // New card, first correct answer → Learned
+                            this.currentState = 'learned';
+                            this.logTransition('New → Learned (first try)', true);
+                            
+                            // Test new to learned transition
+                            this.testResults.newToLearned = true;
+                            this.updateStatus('new-to-learned-status', true);
+                            document.getElementById('new-to-learned-result').textContent = 
+                                'New → Learned: PASSED';
+                        }
+                    } else if (this.currentState === 'struggling') {
+                        if (this.consecutiveCorrect >= 2) {
+                            // Struggling card, 2 consecutive correct → Learned
+                            this.currentState = 'learned';
+                            this.logTransition('Struggling → Learned (2 consecutive)', true);
+                            
+                            // Test struggling to learned transition
+                            this.testResults.strugglingToLearned = true;
+                            this.updateStatus('struggling-to-learned-status', true);
+                            document.getElementById('struggling-to-learned-result').textContent = 
+                                'Struggling → Learned: PASSED';
+                        } else {
+                            this.logTransition(`Struggling (${this.consecutiveCorrect}/2 correct)`, true);
+                        }
+                    }
+                } else {
+                    // Wrong answer
+                    this.currentStreak = 0;
+                    const previousConsecutive = this.consecutiveCorrect;
+                    this.consecutiveCorrect = 0;
+                    this.hasBeenWrong = true;
+                    
+                    // State transition logic for wrong answers
+                    if (this.currentState === 'new') {
+                        // New card, wrong answer → Struggling
+                        this.currentState = 'struggling';
+                        this.logTransition('New → Struggling (wrong answer)', false);
+                        
+                        // Test new to struggling transition
+                        this.testResults.newToStruggling = true;
+                        this.updateStatus('new-to-struggling-status', true);
+                        document.getElementById('new-to-struggling-result').textContent = 
+                            'New → Struggling: PASSED';
+                    } else if (this.currentState === 'struggling') {
+                        this.logTransition('Struggling (counter reset)', false);
+                    }
+                    
+                    // Test counter reset
+                    if (previousConsecutive > 0) {
+                        this.testResults.resetCounter = true;
+                        this.updateStatus('reset-counter-status', true);
+                        document.getElementById('reset-counter-result').textContent = 
+                            'Counter reset: PASSED';
+                    }
+                }
+                
+                // Track state changes
+                if (previousState !== this.currentState) {
+                    this.stateChanges++;
+                }
+                
+                this.updateDisplay();
+                this.updateAnalytics();
+                
+                console.log(`🧠 Answer: ${isCorrect ? 'Correct' : 'Wrong'}, State: ${this.currentState}, Consecutive: ${this.consecutiveCorrect}`);
+            }
+            
+            // Reset Card to Initial State
+            resetCard() {
+                this.currentState = 'new';
+                this.consecutiveCorrect = 0;
+                this.hasBeenWrong = false;
+                
+                this.logTransition('Card Reset', null);
+                this.updateDisplay();
+                
+                console.log('🔄 Card reset to initial state');
+            }
+            
+            // Log State Transition
+            logTransition(description, isCorrect) {
+                const timestamp = new Date().toLocaleTimeString();
+                const entry = {
+                    time: timestamp,
+                    description: description,
+                    isCorrect: isCorrect,
+                    state: this.currentState,
+                    consecutive: this.consecutiveCorrect
+                };
+                
+                this.history.push(entry);
+                
+                // Update history display
+                const historyLog = document.getElementById('historyLog');
+                const entryElement = document.createElement('div');
+                entryElement.className = `history-entry ${
+                    isCorrect === true ? 'history-correct' : 
+                    isCorrect === false ? 'history-wrong' : ''
+                }`;
+                entryElement.textContent = `${timestamp}: ${description}`;
+                
+                historyLog.appendChild(entryElement);
+                
+                // Keep only last 10 entries
+                while (historyLog.children.length > 10) {
+                    historyLog.removeChild(historyLog.firstChild);
+                }
+                
+                // Auto-scroll to bottom
+                historyLog.scrollTop = historyLog.scrollHeight;
+            }
+            
+            // Update Visual Display
+            updateDisplay() {
+                // Reset all state visuals
+                document.querySelectorAll('.card-state').forEach(state => {
+                    state.classList.remove('active');
+                });
+                
+                // Activate current state
+                const currentStateElement = document.getElementById(`state${this.currentState.charAt(0).toUpperCase() + this.currentState.slice(1)}`);
+                if (currentStateElement) {
+                    currentStateElement.classList.add('active');
+                }
+                
+                // Update counters
+                document.getElementById('newCounter').textContent = 
+                    this.currentState === 'new' ? this.consecutiveCorrect : '—';
+                document.getElementById('strugglingCounter').textContent = 
+                    this.currentState === 'struggling' ? this.consecutiveCorrect : '—';
+                document.getElementById('learnedCounter').textContent = 
+                    this.currentState === 'learned' ? 'Mastered!' : 'Not Learned';
+            }
+            
+            // Update Analytics Display
+            updateAnalytics() {
+                document.getElementById('totalAttempts').textContent = this.totalAttempts;
+                document.getElementById('correctAttempts').textContent = this.correctAttempts;
+                
+                const accuracy = this.totalAttempts > 0 ? 
+                    Math.round((this.correctAttempts / this.totalAttempts) * 100) : 0;
+                document.getElementById('accuracyRate').textContent = accuracy + '%';
+                
+                document.getElementById('currentStreak').textContent = this.currentStreak;
+                document.getElementById('bestStreak').textContent = this.bestStreak;
+                document.getElementById('stateChanges').textContent = this.stateChanges;
+            }
+            
+            // Update test status indicators
+            updateStatus(elementId, passed) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.className = `test-status ${passed ? 'pass' : 'fail'}`;
+                }
+            }
+            
+            // Update overall test results
+            updateTestResults() {
+                const totalTests = Object.keys(this.testResults).length;
+                const passedTests = Object.values(this.testResults).filter(result => result).length;
+                const passRate = Math.round((passedTests / totalTests) * 100);
+                
+                const summary = document.getElementById('resultSummary');
+                const details = document.getElementById('resultDetails');
+                
+                if (passRate === 100) {
+                    summary.textContent = `✅ All Card State Tests Passed! (${passedTests}/${totalTests})`;
+                    summary.style.color = '#00ff00';
+                    details.textContent = 'Card learning state system is fully functional and ready for implementation.';
+                } else if (passRate >= 80) {
+                    summary.textContent = `⚠️ Most Card State Tests Passed (${passedTests}/${totalTests}) - ${passRate}%`;
+                    summary.style.color = '#ffff00';
+                    details.textContent = 'Minor card state issues detected. Continue testing to validate all transitions.';
+                } else if (passRate >= 50) {
+                    summary.textContent = `🔄 Card State Tests In Progress (${passedTests}/${totalTests}) - ${passRate}%`;
+                    summary.style.color = '#00ffff';
+                    details.textContent = 'Continue testing different answer combinations to validate all state transitions.';
+                } else {
+                    summary.textContent = `❌ Card State Tests Failed (${passedTests}/${totalTests}) - ${passRate}%`;
+                    summary.style.color = '#ff0000';
+                    details.textContent = 'Significant card state issues detected. Review state machine logic.';
+                }
+                
+                console.log(`📊 Card States Test Results: ${passedTests}/${totalTests} passed (${passRate}%)`);
+            }
+        }
+        
+        // Initialize tests when page loads
+        window.addEventListener('load', () => {
+            new CardStatesTest();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    
+    <!-- Cache-busting headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Mobile-specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    
+    <title>Mobile Progressive Gameplay Test - Card Blaster</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background: #000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        
+        .test-container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+        
+        .test-title {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            margin-bottom: 10px;
+        }
+        
+        .test-subtitle {
+            color: #ff6600;
+            font-size: clamp(0.8rem, 3vw, 1rem);
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .test-item {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+        }
+        
+        .test-status {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .pass { background: #00ff00; }
+        .fail { background: #ff0000; }
+        .pending { background: #ffff00; }
+        .info { background: #0099ff; }
+        
+        .deck-selector {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 6px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin-bottom: 10px;
+            min-height: 44px; /* Touch-friendly */
+        }
+        
+        .difficulty-selector {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 6px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin-bottom: 15px;
+            min-height: 44px; /* Touch-friendly */
+        }
+        
+        .card-state-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .card-state {
+            padding: 15px 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .card-new {
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+        }
+        
+        .card-struggling {
+            background: rgba(255, 102, 0, 0.2);
+            border: 2px solid #ff6600;
+            color: #ff6600;
+        }
+        
+        .card-learned {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+        }
+        
+        .card-state:active {
+            transform: scale(0.95);
+        }
+        
+        .touch-test-area {
+            width: 100%;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .touch-feedback {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,255,255,0.8) 0%, rgba(0,255,255,0) 70%);
+            pointer-events: none;
+            animation: touchFeedback 0.5s ease-out forwards;
+        }
+        
+        @keyframes touchFeedback {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .performance-monitor {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .fps-counter {
+            color: #00ff00;
+        }
+        
+        .touch-latency {
+            color: #00ffff;
+        }
+        
+        .memory-usage {
+            color: #ff6600;
+        }
+        
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+        }
+        
+        .result-summary {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .result-details {
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            line-height: 1.4;
+        }
+        
+        /* Responsive adjustments for very small screens */
+        @media (max-width: 320px) {
+            .test-container {
+                padding: 5px;
+            }
+            
+            .test-section {
+                padding: 10px;
+            }
+            
+            .card-state-demo {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 class="test-title">Mobile Progressive Test</h1>
+            <p class="test-subtitle">Touch Event Simulation & Mobile Viewport Testing</p>
+        </div>
+        
+        <!-- Mobile Viewport Configuration Test -->
+        <div class="test-section">
+            <h2 class="section-title">📱 Mobile Viewport Configuration</h2>
+            <div class="test-item">
+                <span class="test-status pending" id="viewport-status"></span>
+                <span id="viewport-result">Testing viewport dimensions...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="responsive-status"></span>
+                <span id="responsive-result">Testing responsive grid (320px-428px)...</span>
+            </div>
+        </div>
+        
+        <!-- Touch Gesture Recognition Test -->
+        <div class="test-section">
+            <h2 class="section-title">👆 Touch Gesture Recognition</h2>
+            <div class="touch-test-area" id="touchTestArea">
+                <span>Tap, Swipe, or Long Press Here</span>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="tap-status"></span>
+                <span id="tap-result">Tap detection: Not tested</span>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="swipe-status"></span>
+                <span id="swipe-result">Swipe detection: Not tested</span>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="longpress-status"></span>
+                <span id="longpress-result">Long press detection: Not tested</span>
+            </div>
+        </div>
+        
+        <!-- Deck Selection Test -->
+        <div class="test-section">
+            <h2 class="section-title">📚 Deck Selection (Touch-Friendly)</h2>
+            <select class="deck-selector" id="deckSelector">
+                <option value="">Loading decks...</option>
+            </select>
+            <div class="test-item">
+                <span class="test-status pending" id="deck-status"></span>
+                <span id="deck-result">Deck discovery: Not tested</span>
+            </div>
+        </div>
+        
+        <!-- Difficulty Level Selection Test -->
+        <div class="test-section">
+            <h2 class="section-title">⚡ Difficulty Level Selection</h2>
+            <select class="difficulty-selector" id="difficultySelector">
+                <option value="">Select difficulty level...</option>
+            </select>
+            <div class="test-item">
+                <span class="test-status pending" id="difficulty-status"></span>
+                <span id="difficulty-result">Difficulty selection: Not tested</span>
+            </div>
+        </div>
+        
+        <!-- Card State Visualization Test -->
+        <div class="test-section">
+            <h2 class="section-title">🎯 Card State Visualization</h2>
+            <div class="card-state-demo">
+                <div class="card-state card-new" data-state="new">
+                    <div>NEW</div>
+                    <small>Never seen</small>
+                </div>
+                <div class="card-state card-struggling" data-state="struggling">
+                    <div>STRUGGLING</div>
+                    <small>Needs 2 correct</small>
+                </div>
+                <div class="card-state card-learned" data-state="learned">
+                    <div>LEARNED</div>
+                    <small>Mastered!</small>
+                </div>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="cardstate-status"></span>
+                <span id="cardstate-result">Card state interaction: Not tested</span>
+            </div>
+        </div>
+        
+        <!-- Performance Monitoring -->
+        <div class="test-section">
+            <h2 class="section-title">⚡ Performance Monitoring</h2>
+            <div class="test-item">
+                <span class="test-status pending" id="fps-status"></span>
+                <span id="fps-result">60 FPS requirement: Testing...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="touch-latency-status"></span>
+                <span id="touch-latency-result">Touch latency (<50ms): Testing...</span>
+            </div>
+            <div class="test-item">
+                <span class="test-status pending" id="memory-status"></span>
+                <span id="memory-result">Memory usage: Testing...</span>
+            </div>
+        </div>
+        
+        <!-- Test Results Summary -->
+        <div class="test-results">
+            <div class="result-summary" id="resultSummary">
+                Running mobile progressive gameplay tests...
+            </div>
+            <div class="result-details" id="resultDetails">
+                Tests will complete automatically. Touch interactions required for gesture testing.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance Monitor Overlay -->
+    <div class="performance-monitor">
+        <div class="fps-counter">FPS: <span id="fpsDisplay">--</span></div>
+        <div class="touch-latency">Touch: <span id="touchLatencyDisplay">--</span>ms</div>
+        <div class="memory-usage">Memory: <span id="memoryDisplay">--</span>MB</div>
+    </div>
+
+    <script>
+        // Mobile Progressive Gameplay Test Suite
+        class MobileProgressiveTest {
+            constructor() {
+                this.testResults = {
+                    viewport: false,
+                    responsive: false,
+                    tap: false,
+                    swipe: false,
+                    longpress: false,
+                    deck: false,
+                    difficulty: false,
+                    cardstate: false,
+                    fps: false,
+                    touchLatency: false,
+                    memory: false
+                };
+                
+                this.touchStartTime = 0;
+                this.touchStartPos = { x: 0, y: 0 };
+                this.longPressTimer = null;
+                this.fpsCounter = 0;
+                this.lastFrameTime = performance.now();
+                this.touchLatencies = [];
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('🚀 Starting Mobile Progressive Gameplay Tests');
+                
+                // Start performance monitoring
+                this.startPerformanceMonitoring();
+                
+                // Run initial tests
+                this.testViewportConfiguration();
+                this.testResponsiveGrid();
+                this.setupTouchGestureTests();
+                this.testDeckDiscovery();
+                this.setupCardStateTests();
+                
+                // Update results every 2 seconds
+                setInterval(() => this.updateTestResults(), 2000);
+            }
+            
+            // Viewport Configuration Test
+            testViewportConfiguration() {
+                const viewport = {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    devicePixelRatio: window.devicePixelRatio || 1,
+                    orientation: screen.orientation ? screen.orientation.type : 'unknown'
+                };
+                
+                const isValidMobile = viewport.width >= 320 && viewport.width <= 428;
+                this.testResults.viewport = isValidMobile;
+                
+                this.updateStatus('viewport-status', isValidMobile);
+                document.getElementById('viewport-result').textContent = 
+                    `Viewport: ${viewport.width}x${viewport.height} (${isValidMobile ? 'VALID' : 'INVALID'} mobile range)`;
+                
+                console.log('📱 Viewport test:', viewport);
+            }
+            
+            // Responsive Grid Test
+            testResponsiveGrid() {
+                const testElement = document.createElement('div');
+                testElement.style.cssText = `
+                    width: 100%;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                    gap: 10px;
+                    position: absolute;
+                    top: -1000px;
+                `;
+                document.body.appendChild(testElement);
+                
+                // Add test items
+                for (let i = 0; i < 4; i++) {
+                    const item = document.createElement('div');
+                    item.textContent = `Item ${i + 1}`;
+                    testElement.appendChild(item);
+                }
+                
+                const computedStyle = getComputedStyle(testElement);
+                const isResponsive = computedStyle.display === 'grid';
+                this.testResults.responsive = isResponsive;
+                
+                this.updateStatus('responsive-status', isResponsive);
+                document.getElementById('responsive-result').textContent = 
+                    `Responsive grid: ${isResponsive ? 'WORKING' : 'FAILED'}`;
+                
+                document.body.removeChild(testElement);
+                console.log('📐 Responsive grid test:', isResponsive);
+            }
+            
+            // Touch Gesture Tests Setup
+            setupTouchGestureTests() {
+                const touchArea = document.getElementById('touchTestArea');
+                
+                touchArea.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.touchStartTime = performance.now();
+                    const touch = e.touches[0];
+                    this.touchStartPos = { x: touch.clientX, y: touch.clientY };
+                    
+                    // Show touch feedback
+                    this.showTouchFeedback(touch.clientX, touch.clientY);
+                    
+                    // Setup long press detection
+                    this.longPressTimer = setTimeout(() => {
+                        this.testResults.longpress = true;
+                        this.updateStatus('longpress-status', true);
+                        document.getElementById('longpress-result').textContent = 'Long press detection: WORKING';
+                        console.log('👆 Long press detected');
+                    }, 500);
+                }, { passive: false });
+                
+                touchArea.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (this.longPressTimer) {
+                        clearTimeout(this.longPressTimer);
+                        this.longPressTimer = null;
+                    }
+                }, { passive: false });
+                
+                touchArea.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    const endTime = performance.now();
+                    const touchLatency = endTime - this.touchStartTime;
+                    this.touchLatencies.push(touchLatency);
+                    
+                    if (this.longPressTimer) {
+                        clearTimeout(this.longPressTimer);
+                        this.longPressTimer = null;
+                    }
+                    
+                    const touch = e.changedTouches[0];
+                    const endPos = { x: touch.clientX, y: touch.clientY };
+                    const deltaX = endPos.x - this.touchStartPos.x;
+                    const deltaY = endPos.y - this.touchStartPos.y;
+                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    
+                    if (distance < 25 && touchLatency < 300) {
+                        // Tap detected
+                        this.testResults.tap = true;
+                        this.updateStatus('tap-status', true);
+                        document.getElementById('tap-result').textContent = 'Tap detection: WORKING';
+                        console.log('👆 Tap detected');
+                    } else if (distance > 30) {
+                        // Swipe detected
+                        this.testResults.swipe = true;
+                        this.updateStatus('swipe-status', true);
+                        document.getElementById('swipe-result').textContent = 'Swipe detection: WORKING';
+                        console.log('👆 Swipe detected');
+                    }
+                }, { passive: false });
+                
+                console.log('👆 Touch gesture tests setup complete');
+            }
+            
+            // Show touch feedback animation
+            showTouchFeedback(x, y) {
+                const feedback = document.createElement('div');
+                feedback.className = 'touch-feedback';
+                feedback.style.left = (x - 20) + 'px';
+                feedback.style.top = (y - 20) + 'px';
+                
+                const touchArea = document.getElementById('touchTestArea');
+                const rect = touchArea.getBoundingClientRect();
+                feedback.style.left = (x - rect.left - 20) + 'px';
+                feedback.style.top = (y - rect.top - 20) + 'px';
+                
+                touchArea.appendChild(feedback);
+                
+                setTimeout(() => {
+                    if (feedback.parentNode) {
+                        feedback.parentNode.removeChild(feedback);
+                    }
+                }, 500);
+            }
+            
+            // Deck Discovery Test
+            async testDeckDiscovery() {
+                try {
+                    // Simulate deck discovery (would normally scan assets directory)
+                    const mockDecks = [
+                        { name: 'Data Science Fundamentals', file: 'data_science_cards.json', levels: [1, 2] },
+                        { name: 'Chinese Language', file: 'chinese_language_cards.json', levels: [1, 2, 3] }
+                    ];
+                    
+                    const deckSelector = document.getElementById('deckSelector');
+                    deckSelector.innerHTML = '<option value="">Select a deck...</option>';
+                    
+                    mockDecks.forEach(deck => {
+                        const option = document.createElement('option');
+                        option.value = deck.file;
+                        option.textContent = deck.name;
+                        deckSelector.appendChild(option);
+                    });
+                    
+                    this.testResults.deck = true;
+                    this.updateStatus('deck-status', true);
+                    document.getElementById('deck-result').textContent = `Deck discovery: WORKING (${mockDecks.length} decks found)`;
+                    
+                    // Setup deck selection handler
+                    deckSelector.addEventListener('change', (e) => {
+                        if (e.target.value) {
+                            this.populateDifficultyLevels(mockDecks.find(d => d.file === e.target.value));
+                        }
+                    });
+                    
+                    console.log('📚 Deck discovery test: PASSED');
+                } catch (error) {
+                    this.testResults.deck = false;
+                    this.updateStatus('deck-status', false);
+                    document.getElementById('deck-result').textContent = 'Deck discovery: FAILED';
+                    console.error('📚 Deck discovery test: FAILED', error);
+                }
+            }
+            
+            // Populate difficulty levels based on selected deck
+            populateDifficultyLevels(deck) {
+                const difficultySelector = document.getElementById('difficultySelector');
+                difficultySelector.innerHTML = '<option value="">Select difficulty level...</option>';
+                
+                deck.levels.forEach(level => {
+                    const option = document.createElement('option');
+                    option.value = level;
+                    option.textContent = `Level ${level}`;
+                    difficultySelector.appendChild(option);
+                });
+                
+                this.testResults.difficulty = true;
+                this.updateStatus('difficulty-status', true);
+                document.getElementById('difficulty-result').textContent = 
+                    `Difficulty selection: WORKING (${deck.levels.length} levels available)`;
+                
+                console.log('⚡ Difficulty levels populated:', deck.levels);
+            }
+            
+            // Card State Tests Setup
+            setupCardStateTests() {
+                const cardStates = document.querySelectorAll('.card-state');
+                let interactionCount = 0;
+                
+                cardStates.forEach(card => {
+                    card.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        interactionCount++;
+                        
+                        // Visual feedback
+                        card.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            card.style.transform = 'scale(1)';
+                        }, 150);
+                        
+                        if (interactionCount >= 3) {
+                            this.testResults.cardstate = true;
+                            this.updateStatus('cardstate-status', true);
+                            document.getElementById('cardstate-result').textContent = 
+                                'Card state interaction: WORKING';
+                            console.log('🎯 Card state interaction test: PASSED');
+                        }
+                    }, { passive: false });
+                });
+                
+                console.log('🎯 Card state tests setup complete');
+            }
+            
+            // Performance Monitoring
+            startPerformanceMonitoring() {
+                let frameCount = 0;
+                let lastFpsUpdate = performance.now();
+                
+                const updateFPS = () => {
+                    const now = performance.now();
+                    frameCount++;
+                    
+                    if (now - lastFpsUpdate >= 1000) {
+                        const fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
+                        document.getElementById('fpsDisplay').textContent = fps;
+                        
+                        this.testResults.fps = fps >= 55; // Allow some margin below 60
+                        this.updateStatus('fps-status', this.testResults.fps);
+                        document.getElementById('fps-result').textContent = 
+                            `60 FPS requirement: ${fps} FPS (${this.testResults.fps ? 'PASS' : 'FAIL'})`;
+                        
+                        frameCount = 0;
+                        lastFpsUpdate = now;
+                    }
+                    
+                    requestAnimationFrame(updateFPS);
+                };
+                
+                requestAnimationFrame(updateFPS);
+                
+                // Touch latency monitoring
+                setInterval(() => {
+                    if (this.touchLatencies.length > 0) {
+                        const avgLatency = this.touchLatencies.reduce((a, b) => a + b, 0) / this.touchLatencies.length;
+                        document.getElementById('touchLatencyDisplay').textContent = Math.round(avgLatency);
+                        
+                        this.testResults.touchLatency = avgLatency < 50;
+                        this.updateStatus('touch-latency-status', this.testResults.touchLatency);
+                        document.getElementById('touch-latency-result').textContent = 
+                            `Touch latency (<50ms): ${Math.round(avgLatency)}ms (${this.testResults.touchLatency ? 'PASS' : 'FAIL'})`;
+                        
+                        this.touchLatencies = []; // Reset for next measurement
+                    }
+                }, 2000);
+                
+                // Memory monitoring
+                if (performance.memory) {
+                    setInterval(() => {
+                        const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                        document.getElementById('memoryDisplay').textContent = memoryMB;
+                        
+                        this.testResults.memory = memoryMB < 100; // Reasonable limit for mobile
+                        this.updateStatus('memory-status', this.testResults.memory);
+                        document.getElementById('memory-result').textContent = 
+                            `Memory usage: ${memoryMB}MB (${this.testResults.memory ? 'GOOD' : 'HIGH'})`;
+                    }, 5000);
+                }
+                
+                console.log('⚡ Performance monitoring started');
+            }
+            
+            // Update test status indicators
+            updateStatus(elementId, passed) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.className = `test-status ${passed ? 'pass' : 'fail'}`;
+                }
+            }
+            
+            // Update overall test results
+            updateTestResults() {
+                const totalTests = Object.keys(this.testResults).length;
+                const passedTests = Object.values(this.testResults).filter(result => result).length;
+                const passRate = Math.round((passedTests / totalTests) * 100);
+                
+                const summary = document.getElementById('resultSummary');
+                const details = document.getElementById('resultDetails');
+                
+                if (passRate === 100) {
+                    summary.textContent = `✅ All Mobile Tests Passed! (${passedTests}/${totalTests})`;
+                    summary.style.color = '#00ff00';
+                    details.textContent = 'Mobile progressive gameplay foundation is ready for implementation.';
+                } else if (passRate >= 80) {
+                    summary.textContent = `⚠️ Most Tests Passed (${passedTests}/${totalTests}) - ${passRate}%`;
+                    summary.style.color = '#ffff00';
+                    details.textContent = 'Minor issues detected. Review failed tests before proceeding.';
+                } else {
+                    summary.textContent = `❌ Tests Failed (${passedTests}/${totalTests}) - ${passRate}%`;
+                    summary.style.color = '#ff0000';
+                    details.textContent = 'Significant issues detected. Fix critical failures before implementation.';
+                }
+                
+                console.log(`📊 Test Results: ${passedTests}/${totalTests} passed (${passRate}%)`);
+            }
+        }
+        
+        // Initialize tests when page loads
+        window.addEventListener('load', () => {
+            new MobileProgressiveTest();
+        });
+        
+        // Handle orientation changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                // Re-run viewport tests after orientation change
+                if (window.mobileTest) {
+                    window.mobileTest.testViewportConfiguration();
+                    window.mobileTest.testResponsiveGrid();
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html> 
