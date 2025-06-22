@@ -20,7 +20,18 @@ alwaysApply: true
 - **ALWAYS** verify responsive design at 320px, 768px, 1024px+ breakpoints
 - **ALWAYS** test on actual mobile devices when possible
 
-### 3. Mathematical Accuracy Requirements
+### 3. AUTOMATIC GIT OPERATIONS - MANDATORY
+- **ALWAYS** commit and push changes after completing any work
+- **NEVER** end a session without committing progress
+- **ALWAYS** use descriptive commit messages with:
+  - Summary of changes made
+  - Features added or bugs fixed
+  - Impact on functionality
+  - Live demo link if applicable
+- **ALWAYS** run: `git add -A && git commit -m "descriptive message" && git push origin main`
+- **IMMEDIATE DEPLOYMENT**: Changes auto-deploy to GitHub Pages at https://wabbazzar.github.io/blaster/
+
+### 4. Mathematical Accuracy Requirements
 - **Level Progression**: Exactly 42 levels with precise mathematical formulas
 - **Sample Set Size**: `floor(5 + (level - 1) * 1.12)` - MUST be exact
 - **Cards to Progress**: `floor(sampleSetSize * 0.6)` - MUST be exact  
@@ -28,7 +39,7 @@ alwaysApply: true
 - **Falling Speed**: `1.0 + (level - 1) * 0.05` - MUST be exact
 - **Question Scaling**: 1 question (levels 1-14), 2 questions (15-28), 3 questions (29-42)
 
-### 4. Beta Distribution Implementation
+### 5. Beta Distribution Implementation
 - **MUST** use Beta(2, 5) distribution for card selection weighting
 - **MUST** implement proper probability weighting:
   - New cards: 70% selection probability
@@ -36,25 +47,72 @@ alwaysApply: true
   - Mastered cards: 20% * Beta(2,5) sample
 - **MUST** track card mastery (3+ correct = mastered)
 
-### 5. Game Mechanics Requirements
+### 6. Game Mechanics Requirements
 - **Lives System**: Start 5, gain 1 per level, max 10
 - **Life Loss**: Wrong shot, correct answer missed, wrong answer hits ship
 - **Scoring**: +100 points per correct answer only
 - **Hit Animations**: Blue burst (correct), red explosion (wrong)
 - **Screen Effects**: Shake on life loss, flash on level up
 
-### 6. Visual Design - Tron Aesthetic
+### 7. Visual Design - Tron Aesthetic
 - **Color Palette**: Cyan (#00ffff), electric blue, dark backgrounds
 - **Effects**: Glowing outlines, neon borders, particle effects
 - **Typography**: Futuristic monospace (Orbitron preferred)
 - **Animations**: Smooth 60 FPS, proper CSS keyframes
 
-### 7. Data Integration Rules
+### 8. Data Integration Rules
 - **MUST** use existing `assets/data_science_cards.json` (52 cards)
 - **MUST** filter by progression_level (1-7) based on current level
 - **MUST** use provided wrong_answers from each card
 - **MUST** display questions as "What is [term]?"
 - **MUST** show definition as correct answer
+
+## Git Workflow - MANDATORY FOR ALL CHANGES
+
+### Automatic Commit Protocol
+After ANY code changes, file creation, or bug fixes:
+
+1. **Stage all changes**: `git add -A`
+2. **Commit with descriptive message**: `git commit -m "Clear description of changes"`
+3. **Push to deploy**: `git push origin main`
+4. **Verify deployment**: Check https://wabbazzar.github.io/blaster/ (deploys in 2-3 minutes)
+
+### Commit Message Format
+```
+Brief summary of changes
+
+- Specific feature added/bug fixed
+- Impact on gameplay/functionality  
+- Test results or verification
+- Performance improvements
+- Mobile compatibility changes
+
+Live demo: https://wabbazzar.github.io/blaster/
+```
+
+### Examples of Good Commit Messages
+```bash
+git commit -m "Fix target boundary bug - targets now disappear at board edge
+
+- Changed boundary check from tgt.y >= boardHeight to tgt.y + targetHeight >= boardHeight
+- Targets no longer appear below game board (cyan line)
+- Created test_board_boundary.html to verify fix
+- All boundary tests now pass
+
+Live demo: https://wabbazzar.github.io/blaster/"
+```
+
+```bash
+git commit -m "Add mobile-first responsive design and touch controls
+
+- Add viewport meta tag for mobile scaling
+- Create virtual control buttons for touch devices
+- Implement unified input handler (touch/mouse/keyboard)
+- Add mobile assessment test suite
+- Create mobile development roadmap in docs/mobile_todo.md
+
+Live demo: https://wabbazzar.github.io/blaster/"
+```
 
 ## Testing Protocol
 
@@ -67,6 +125,7 @@ Before claiming any phase complete, **MUST** verify:
 4. **Mathematical Test**: Verify formulas produce correct values
 5. **Performance Test**: Verify 60 FPS smooth operation
 6. **Cross-browser Test**: Test in multiple browsers
+7. **Git Commit**: Commit and push all changes immediately
 
 ### Debugging Protocol
 When issues occur:
@@ -75,6 +134,7 @@ When issues occur:
 3. **Test mathematical functions** in isolation
 4. **Verify event listeners** are properly attached
 5. **Check responsive design** at different screen sizes
+6. **Commit working fixes immediately**
 
 ### Server Management
 - **Port conflicts**: Kill existing servers before starting new ones
@@ -89,6 +149,7 @@ When issues occur:
 - [ ] Mathematical test suite passing
 - [ ] Mobile test suite functional
 - [ ] Server running without errors
+- [ ] **Git repository configured and changes committed**
 
 ### Phase 1: Core Game Loop
 - [ ] Ship movement (keyboard + touch + mouse)
@@ -96,6 +157,7 @@ When issues occur:
 - [ ] Game loop running at 60 FPS
 - [ ] Input handling unified across platforms
 - [ ] Visual feedback on all actions
+- [ ] **All changes committed and pushed**
 
 ### Phase 2: Mathematical System
 - [ ] All 42 level formulas implemented correctly
@@ -103,6 +165,7 @@ When issues occur:
 - [ ] Cards to progress calculation accurate
 - [ ] Speed progression working
 - [ ] Question scaling (1/2/3 questions) working
+- [ ] **Mathematical accuracy verified and committed**
 
 ### Phase 3: Card Selection System
 - [ ] Beta distribution implemented correctly
@@ -110,6 +173,7 @@ When issues occur:
 - [ ] Weighted selection working
 - [ ] New vs mastered card probability correct
 - [ ] Card progression through levels working
+- [ ] **Card system tested and committed**
 
 ### Phase 4: Target System
 - [ ] Hexagonal targets spawning
@@ -117,6 +181,7 @@ When issues occur:
 - [ ] Collision detection accurate
 - [ ] Hit animations working
 - [ ] Target cleanup on question change
+- [ ] **Target system verified and committed**
 
 ### Phase 5: Game Systems
 - [ ] Lives system working (start 5, gain 1, max 10)
@@ -124,6 +189,7 @@ When issues occur:
 - [ ] Scoring system accurate (+100 per correct)
 - [ ] Level progression automatic
 - [ ] Game over handling proper
+- [ ] **Game systems tested and committed**
 
 ### Phase 6: Visual Polish
 - [ ] Tron aesthetic consistent
@@ -131,6 +197,7 @@ When issues occur:
 - [ ] Screen effects working
 - [ ] Responsive design perfect
 - [ ] No visual glitches
+- [ ] **Visual polish complete and committed**
 
 ### Phase 7: UI/UX Systems
 - [ ] Start menu overlay working
@@ -138,6 +205,7 @@ When issues occur:
 - [ ] Game over overlay styled (NO BROWSER ALERTS)
 - [ ] HUD displaying correctly
 - [ ] All overlays properly styled
+- [ ] **UI/UX complete and committed**
 
 ## Critical Success Criteria
 
@@ -171,13 +239,20 @@ When issues occur:
 - [ ] Keyboard controls working
 - [ ] Mouse controls working
 
+### Deployment & Version Control
+- [ ] **All changes committed to git with descriptive messages**
+- [ ] **Live demo deployed and accessible at GitHub Pages**
+- [ ] **No uncommitted changes in working directory**
+- [ ] **README updated with latest features and demo link**
+
 ## Error Prevention Rules
 
 ### Before Any Code Changes
 1. **Test current state** - verify what's working/broken
 2. **Make minimal changes** - one feature at a time
 3. **Test immediately** - verify change works
-4. **Fix before proceeding** - don't accumulate bugs
+4. **Commit immediately** - save working progress
+5. **Fix before proceeding** - don't accumulate bugs
 
 ### Before Claiming Completion
 1. **Full gameplay test** - play through multiple levels
@@ -185,6 +260,8 @@ When issues occur:
 3. **Cross-device test** - verify mobile and desktop
 4. **Performance test** - ensure 60 FPS maintained
 5. **Visual test** - verify Tron aesthetic consistent
+6. **Git status clean** - all changes committed and pushed
+7. **Live demo verified** - test deployed version
 
 ### Common Pitfalls to Avoid
 - **DOM element IDs** - ensure they match between HTML and JavaScript
@@ -192,6 +269,7 @@ When issues occur:
 - **Async operations** - handle loading states properly
 - **Mathematical precision** - use exact formulas, not approximations
 - **Mobile viewport** - test actual mobile devices, not just browser dev tools
+- **Uncommitted changes** - NEVER leave work uncommitted
 
 ## Definition of Done
 
@@ -204,6 +282,8 @@ A feature is **NOT DONE** until:
 6. **Visually polished** (Tron aesthetic consistent)
 7. **Error-free** (no console errors)
 8. **Responsive** (works at all screen sizes)
+9. **COMMITTED AND PUSHED** to git repository
+10. **DEPLOYED** and verified on live demo
 
 **NEVER** claim completion without completing ALL criteria above.
 
@@ -217,7 +297,17 @@ When things break:
 5. **Test mathematical functions** - verify calculations
 6. **Check event listeners** - verify they're attached
 7. **Test step by step** - isolate the broken component
-8. **Revert if necessary** - go back to last working state
+8. **Commit working fixes immediately** - save progress
+9. **Revert if necessary** - go back to last working state
+
+## Session End Protocol
+
+Before ending any development session:
+1. **Run final tests** - ensure everything works
+2. **Check git status** - verify no uncommitted changes
+3. **Push final commit** - deploy latest version
+4. **Verify live demo** - test deployed version
+5. **Update documentation** - if new features added
 
 Remember: **WORKING CODE > PERFECT CODE**
-Get it working first, then optimize and polish.
+Get it working first, commit it, then optimize and polish.

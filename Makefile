@@ -189,3 +189,7 @@ test-all:
 	@make test-board-boundary
 	@sleep 2
 	@make test-mobile-assessment
+
+# New features testing
+test-new-features:
+	@open http://localhost:8000/tests/test_new_features.html || xdg-open http://localhost:8000/tests/test_new_features.html

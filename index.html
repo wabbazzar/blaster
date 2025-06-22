@@ -23,35 +23,707 @@
     <meta name="twitter:description" content="Arcade-style flashcard learning game">
     
     <style>
-        /* Phase 0 basic reset */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000000; color: #00ffff; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        h1 { font-size: 2rem; }
+        /* Mobile-first Tron aesthetic */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background: #000000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: manipulation;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        #wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            height: 100vh;
+            height: 100dvh;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+            animation: neonFlicker 2s ease-in-out infinite alternate;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes neonFlicker {
+            0%, 100% {
+                text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+            }
+            50% {
+                text-shadow: 0 0 25px #00ffff, 0 0 50px #00ffff, 0 0 70px #00ffff;
+            }
+        }
+        
+        #questionArea {
+            width: min(400px, 90vw);
+            height: 100px;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #00ffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 255, 0.05);
+            padding: 10px;
+        }
+        
+        #questionText {
+            font-size: clamp(12px, 3vw, 14px);
+            text-align: center;
+            color: #ffffff;
+        }
+        
+        #scoreArea {
+            width: min(400px, 90vw);
+            height: 50px;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #00ffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            background: rgba(0, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        #scoreArea:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px #00ffff;
+        }
+        
+        .score-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .score-item {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: bold;
+        }
+        
+        .level-item {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: bold;
+        }
+        
+        /* Toggle switch for correct answer highlighting */
+        .highlight-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: clamp(10px, 2.5vw, 12px);
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-switch.active {
+            background: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            width: 16px;
+            height: 16px;
+            background: #00ffff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px #00ffff;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(18px);
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        #gameBoard {
+            position: relative;
+            width: min(400px, 90vw);
+            height: min(600px, 60vh);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #00ffff;
+            background: rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            flex: 1;
+            max-height: 600px;
+        }
+        
+        #ship {
+            position: absolute;
+            bottom: 20px;
+            left: 180px;
+            width: 40px;
+            height: 40px;
+            background: #00ffff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ffff;
+        }
+        
+        /* Game state overlays */
+        .game-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            padding: 20px;
+            display: none;
+        }
+        
+        .game-overlay.active {
+            display: flex;
+        }
+        
+        .overlay-title {
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            font-weight: bold;
+        }
+        
+        .menu-title {
+            color: #00ffff;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px #00ffff;
+            animation: neonFlicker 2s ease-in-out infinite alternate;
+        }
+        
+        .pause-title {
+            color: #ffff00;
+            text-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00, 0 0 60px #ffff00;
+        }
+        
+        .overlay-subtitle {
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            color: #ff6600;
+            text-shadow: 0 0 10px #ff6600, 0 0 20px #ff6600;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+        
+        .overlay-text {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            opacity: 0.8;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            text-align: center;
+        }
+        
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .control-section {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .control-title {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .control-item {
+            color: #ffffff;
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            opacity: 0.8;
+            margin: 0.3rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-key {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+            font-weight: bold;
+        }
+        
+        .start-button {
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            border: none;
+            padding: 1rem 3rem;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            cursor: pointer;
+            box-shadow: 0 0 20px #00ffff;
+            transition: all 0.3s ease;
+            color: #000;
+            font-weight: bold;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .start-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translate(-50%, -50%) rotate(45deg) scale(0);
+            transition: transform 0.6s;
+        }
+        
+        .start-button:hover::before {
+            transform: translate(-50%, -50%) rotate(45deg) scale(2);
+        }
+        
+        .start-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Target styles */
+        .target {
+            transition: all 0.1s ease;
+        }
+        
+        .target.correct-highlighted {
+            background: #00ff00 !important;
+            border-color: #00ff00 !important;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        
+        .target.correct-normal {
+            background: #ff6600 !important;
+            border-color: #00ffff !important;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 480px) {
+            #wrapper {
+                padding: 5px;
+                gap: 5px;
+            }
+            
+            .highlight-toggle {
+                font-size: 10px;
+            }
+            
+            .toggle-switch {
+                width: 30px;
+                height: 16px;
+            }
+            
+            .toggle-slider {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .toggle-switch.active .toggle-slider {
+                transform: translateX(12px);
+            }
+        }
+        
+        /* Pause indicator */
+        .pause-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #ffff00;
+            font-size: 12px;
+            text-shadow: 0 0 5px #ffff00;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .pause-indicator.visible {
+            opacity: 1;
+        }
+        
+        /* Mobile-first responsive visibility classes */
+        .mobile-only {
+            display: block;
+        }
+        
+        .desktop-only {
+            display: none;
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-only {
+                display: none;
+            }
+            
+            .desktop-only {
+                display: block;
+            }
+        }
+        
+        /* Make pause overlay clickable for resume */
+        #pauseOverlay {
+            cursor: pointer;
+        }
+        
+        #pauseOverlay:hover {
+            background: rgba(0, 0, 0, 0.98);
+        }
     </style>
 </head>
 <body>
-    <div id="wrapper" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+    <div id="wrapper">
         <h1>Card Blaster</h1>
 
-        <!-- Question Area (static) -->
-        <div id="questionArea" style="width:400px;height:100px;border:1px solid #00ffff;display:flex;align-items:center;justify-content:center;">
+        <!-- Question Area -->
+        <div id="questionArea">
             <div id="questionText">Question goes here</div>
         </div>
 
-        <!-- Score Display -->
-        <div id="scoreArea" style="width:400px;height:30px;border:1px solid #00ffff;display:flex;align-items:center;justify-content:space-between;padding:0 10px;">
-            <div>Score: <span id="scoreValue">0</span></div>
-            <div>Level: <span id="levelValue">1</span></div>
+        <!-- Score Display with Toggle Switch -->
+        <div id="scoreArea">
+            <div class="score-section">
+                <div class="score-item">Score: <span id="scoreValue">0</span></div>
+                <div class="level-item">Level: <span id="levelValue">1</span></div>
+            </div>
+            
+            <div class="highlight-toggle">
+                <span>Highlight</span>
+                <div class="toggle-switch active" id="highlightToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            
+            <div class="pause-indicator" id="pauseIndicator">PAUSED</div>
         </div>
 
-        <!-- Game Board (static) -->
-        <div id="gameBoard" style="position:relative;width:400px;height:600px;border:1px solid #00ffff;">
-            <!-- Ship (static) -->
-            <div id="ship" style="position:absolute;bottom:20px;left:180px;width:40px;height:40px;background:#00ffff;"></div>
+        <!-- Game Board -->
+        <div id="gameBoard">
+            <!-- Ship -->
+            <div id="ship"></div>
         </div>
     </div>
 
+    <!-- Start Menu Overlay -->
+    <div class="game-overlay active" id="startOverlay">
+        <h1 class="overlay-title menu-title">Card Blaster</h1>
+        <p class="overlay-subtitle">Arcade Learning Game</p>
+        
+        <div class="controls-container">
+            <div class="control-section">
+                <div class="control-title">Desktop Controls</div>
+                <div class="control-item">
+                    <span class="control-key">← →</span> Move ship left/right
+                </div>
+                <div class="control-item">
+                    <span class="control-key">SPACE</span> Fire projectile
+                </div>
+                <div class="control-item">
+                    <span class="control-key">Click Scoreboard</span> Pause/Resume
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-title">Mobile Controls</div>
+                <div class="control-item">
+                    <span class="control-key">Touch & Drag</span> Move ship
+                </div>
+                <div class="control-item">
+                    <span class="control-key">Tap Screen</span> Fire projectile
+                </div>
+                <div class="control-item">
+                    <span class="control-key">Tap Scoreboard</span> Pause/Resume
+                </div>
+            </div>
+        </div>
+        
+        <p class="overlay-text">Shoot the correct answers to learn!</p>
+        <button class="start-button" id="startButton">Start Game</button>
+    </div>
+    
+    <!-- Pause Overlay -->
+    <div class="game-overlay" id="pauseOverlay">
+        <h1 class="overlay-title pause-title">Paused</h1>
+        <p class="overlay-text mobile-only">Tap anywhere to resume</p>
+        <p class="overlay-text desktop-only">Press P or click here to resume</p>
+    </div>
+
     <script>
+        // Game State Management
+        let gameRunning = false;
+        let gamePaused = false;
+        let highlightCorrectAnswers = true; // Default to ON
+        
+        // Game loop intervals
+        let projectileInterval = null;
+        let targetInterval = null;
+        
+        // Initialize game state
+        function initializeGame() {
+            gameRunning = false;
+            gamePaused = false;
+            
+            // Setup toggle switch
+            setupHighlightToggle();
+            
+            // Setup scoreboard click for pause/resume
+            setupScoreboardControls();
+            
+            // Setup pause overlay for resume
+            setupPauseOverlay();
+            
+            // Setup start button
+            setupStartButton();
+            
+            console.log('Game initialized');
+        }
+        
+        // Setup highlight toggle functionality
+        function setupHighlightToggle() {
+            const toggle = document.getElementById('highlightToggle');
+            toggle.addEventListener('click', function(e) {
+                // Prevent event bubbling to scoreboard
+                e.stopPropagation();
+                
+                highlightCorrectAnswers = !highlightCorrectAnswers;
+                
+                // Update toggle visual state
+                if (highlightCorrectAnswers) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+                
+                // Update existing targets
+                updateTargetHighlighting();
+                
+                console.log('Highlight toggle:', highlightCorrectAnswers ? 'ON' : 'OFF');
+            });
+            
+            // Also prevent touch events from bubbling
+            toggle.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            });
+        }
+        
+        // Update target highlighting based on toggle state
+        function updateTargetHighlighting() {
+            targets.forEach(target => {
+                if (target.isCorrect) {
+                    target.element.className = 'target';
+                    if (highlightCorrectAnswers) {
+                        target.element.classList.add('correct-highlighted');
+                    } else {
+                        target.element.classList.add('correct-normal');
+                    }
+                }
+            });
+        }
+        
+        // Setup scoreboard controls for pause/resume
+        function setupScoreboardControls() {
+            const scoreArea = document.getElementById('scoreArea');
+            const pauseIndicator = document.getElementById('pauseIndicator');
+            
+            scoreArea.addEventListener('click', function() {
+                if (!gameRunning) return; // Only allow pause/resume when game is running
+                
+                if (gamePaused) {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            });
+            
+            // Add touch support for mobile
+            scoreArea.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                if (!gameRunning) return;
+                
+                if (gamePaused) {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            });
+        }
+        
+        // Setup pause overlay for mobile-friendly resume
+        function setupPauseOverlay() {
+            const pauseOverlay = document.getElementById('pauseOverlay');
+            
+            // Make pause overlay clickable to resume
+            pauseOverlay.addEventListener('click', function() {
+                if (gamePaused && gameRunning) {
+                    resumeGame();
+                    console.log('Game resumed via pause overlay click');
+                }
+            });
+            
+            // Add touch support for mobile
+            pauseOverlay.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (gamePaused && gameRunning) {
+                    resumeGame();
+                    console.log('Game resumed via pause overlay touch');
+                }
+            });
+        }
+        
+        // Pause game
+        function pauseGame() {
+            if (!gameRunning || gamePaused) return;
+            
+            gamePaused = true;
+            
+            // Stop game loops
+            if (projectileInterval) {
+                clearInterval(projectileInterval);
+                projectileInterval = null;
+            }
+            if (targetInterval) {
+                clearInterval(targetInterval);
+                targetInterval = null;
+            }
+            
+            // Show pause overlay and indicator
+            document.getElementById('pauseOverlay').classList.add('active');
+            document.getElementById('pauseIndicator').classList.add('visible');
+            
+            console.log('Game paused');
+        }
+        
+        // Resume game
+        function resumeGame() {
+            if (!gameRunning || !gamePaused) return;
+            
+            gamePaused = false;
+            
+            // Restart game loops
+            startGameLoops();
+            
+            // Hide pause overlay and indicator
+            document.getElementById('pauseOverlay').classList.remove('active');
+            document.getElementById('pauseIndicator').classList.remove('visible');
+            
+            console.log('Game resumed');
+        }
+        
+        // Setup start button
+        function setupStartButton() {
+            const startButton = document.getElementById('startButton');
+            
+            startButton.addEventListener('click', function() {
+                startGame();
+            });
+            
+            // Add touch support for mobile
+            startButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                startGame();
+            });
+        }
+        
+        // Start game
+        function startGame() {
+            // Hide start overlay
+            document.getElementById('startOverlay').classList.remove('active');
+            
+            // Reset game state
+            gameRunning = true;
+            gamePaused = false;
+            score = 0;
+            level = 1;
+            
+            // Update displays
+            updateScore(0);
+            updateLevel(1);
+            
+            // Clear existing targets and projectiles
+            targets.forEach(target => target.element.remove());
+            targets = [];
+            projectiles.forEach(proj => proj.element.remove());
+            projectiles = [];
+            
+            // Start game loops
+            startGameLoops();
+            
+            // Load first question
+            loadFlashcards();
+            
+            console.log('Game started');
+        }
+        
+        // Start game update loops
+        function startGameLoops() {
+            if (projectileInterval) clearInterval(projectileInterval);
+            if (targetInterval) clearInterval(targetInterval);
+            
+            projectileInterval = setInterval(() => {
+                if (!gamePaused) updateProjectiles();
+            }, 50);
+            
+            targetInterval = setInterval(() => {
+                if (!gamePaused) updateTargets();
+            }, 50);
+        }
+        
         // Phase 6: Data Integration
         let flashcards = [];
         let currentQuestion = null;
@@ -218,8 +890,19 @@
             target.style.position = 'absolute';
             target.style.width = targetWidth + 'px';
             target.style.height = targetHeight + 'px';
-            target.style.background = isCorrect ? '#00ff00' : '#ff6600';
-            target.style.border = '2px solid #00ffff';
+            
+            // Apply highlighting based on toggle state
+            if (isCorrect) {
+                if (highlightCorrectAnswers) {
+                    target.classList.add('correct-highlighted');
+                } else {
+                    target.classList.add('correct-normal');
+                }
+            } else {
+                target.style.background = '#ff6600';
+                target.style.border = '2px solid #00ffff';
+            }
+            
             target.style.borderRadius = '10px';
             target.style.left = left + 'px';
             target.style.top = top + 'px';
@@ -413,17 +1096,15 @@
             }
         }
 
-        // Start update loops
-        setInterval(updateProjectiles, 50);
-        setInterval(updateTargets, 50);
-
-        // Initialize game
+        // Initialize game when page loads
         window.addEventListener('load', () => {
-            loadFlashcards();
+            initializeGame();
         });
 
         // Phase 2 & 3: Keyboard controls (arrow keys + spacebar)
         document.addEventListener('keydown', (e) => {
+            if (!gameRunning || gamePaused) return; // Only respond to keys when game is running and not paused
+            
             if (e.key === 'ArrowLeft') {
                 moveShip(-1);
             } else if (e.key === 'ArrowRight') {

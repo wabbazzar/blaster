@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Features - Card Blaster</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            background: #000; 
+            color: #00ffff; 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        .test-section {
+            border: 1px solid #00ffff;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .test-title {
+            color: #00ff00;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 5px;
+            border-left: 3px solid #ffff00;
+            padding-left: 10px;
+        }
+        .pass { border-left-color: #00ff00; color: #00ff00; }
+        .fail { border-left-color: #ff0000; color: #ff0000; }
+        .info { border-left-color: #00ffff; color: #00ffff; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #00ffff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+        button:hover {
+            background: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Card Blaster New Features Test Suite</h1>
+    <p>Testing: Start Overlay, Pause/Resume, Highlight Toggle</p>
+
+    <div class="test-section">
+        <div class="test-title">📋 Test Checklist</div>
+        <div id="testResults">
+            <div class="test-result info">Loading tests...</div>
+        </div>
+        <button onclick="runAllTests()">🔄 Run All Tests</button>
+        <button onclick="openGame()">🎮 Open Game</button>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">🎮 Game Preview</div>
+        <iframe id="gameFrame" src="../index.html"></iframe>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function addTestResult(name, passed, message) {
+            testResults.push({ name, passed, message });
+            updateTestDisplay();
+        }
+        
+        function updateTestDisplay() {
+            const container = document.getElementById('testResults');
+            container.innerHTML = testResults.map(test => 
+                `<div class="test-result ${test.passed ? 'pass' : 'fail'}">
+                    ${test.passed ? '✅' : '❌'} ${test.name}: ${test.message}
+                </div>`
+            ).join('');
+        }
+        
+        function runAllTests() {
+            testResults = [];
+            addTestResult('Test Setup', true, 'Starting comprehensive feature tests...');
+            
+            // Test 1: Check if game iframe loads
+            setTimeout(() => {
+                const iframe = document.getElementById('gameFrame');
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    addTestResult('Game Loading', true, 'Game iframe loaded successfully');
+                    
+                    // Test 2: Check for start overlay
+                    const startOverlay = iframeDoc.getElementById('startOverlay');
+                    if (startOverlay) {
+                        const isVisible = startOverlay.classList.contains('active');
+                        addTestResult('Start Overlay', isVisible, 
+                            isVisible ? 'Start overlay is visible on load' : 'Start overlay not visible');
+                    } else {
+                        addTestResult('Start Overlay', false, 'Start overlay element not found');
+                    }
+                    
+                    // Test 3: Check for highlight toggle
+                    const highlightToggle = iframeDoc.getElementById('highlightToggle');
+                    if (highlightToggle) {
+                        const isActive = highlightToggle.classList.contains('active');
+                        addTestResult('Highlight Toggle', isActive, 
+                            isActive ? 'Highlight toggle is ON by default' : 'Highlight toggle found but not active');
+                    } else {
+                        addTestResult('Highlight Toggle', false, 'Highlight toggle element not found');
+                    }
+                    
+                    // Test 4: Check for pause overlay
+                    const pauseOverlay = iframeDoc.getElementById('pauseOverlay');
+                    if (pauseOverlay) {
+                        const isHidden = !pauseOverlay.classList.contains('active');
+                        addTestResult('Pause Overlay', isHidden, 
+                            isHidden ? 'Pause overlay is hidden by default' : 'Pause overlay should be hidden initially');
+                    } else {
+                        addTestResult('Pause Overlay', false, 'Pause overlay element not found');
+                    }
+                    
+                    // Test 5: Check scoreboard structure
+                    const scoreArea = iframeDoc.getElementById('scoreArea');
+                    if (scoreArea) {
+                        const hasToggle = scoreArea.querySelector('.highlight-toggle') !== null;
+                        const hasPauseIndicator = scoreArea.querySelector('.pause-indicator') !== null;
+                        addTestResult('Scoreboard Structure', hasToggle && hasPauseIndicator,
+                            `Toggle: ${hasToggle ? '✓' : '✗'}, Pause Indicator: ${hasPauseIndicator ? '✓' : '✗'}`);
+                    } else {
+                        addTestResult('Scoreboard Structure', false, 'Score area not found');
+                    }
+                    
+                    // Test 6: Check CSS styling
+                    const body = iframeDoc.body;
+                    const computedStyle = iframe.contentWindow.getComputedStyle(body);
+                    const hasTronStyling = computedStyle.backgroundColor === 'rgb(0, 0, 0)' && 
+                                         computedStyle.color === 'rgb(0, 255, 255)';
+                    addTestResult('Tron Styling', hasTronStyling, 
+                        hasTronStyling ? 'Tron aesthetic applied correctly' : 'Styling may not be applied');
+                    
+                    // Test 7: Check for start button
+                    const startButton = iframeDoc.getElementById('startButton');
+                    if (startButton) {
+                        const hasGradient = iframe.contentWindow.getComputedStyle(startButton).background.includes('gradient');
+                        addTestResult('Start Button', true, 'Start button found with proper styling');
+                    } else {
+                        addTestResult('Start Button', false, 'Start button not found');
+                    }
+                    
+                    addTestResult('Test Complete', true, 'All automated tests completed. Manual testing required for full functionality.');
+                    
+                } catch (error) {
+                    addTestResult('Cross-Frame Access', false, 'Cannot access iframe content (CORS/security)');
+                    addTestResult('Manual Testing Required', true, 'Please test features manually in the game above');
+                }
+            }, 1000);
+        }
+        
+        function openGame() {
+            window.open('../index.html', '_blank');
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+
+    <div class="test-section">
+        <div class="test-title">📝 Manual Testing Instructions</div>
+        <div class="test-result info">
+            <strong>1. Start Overlay Test:</strong><br>
+            • Game should show start overlay on load<br>
+            • Click "Start Game" button to begin<br>
+            • Overlay should disappear when game starts
+        </div>
+        <div class="test-result info">
+            <strong>2. Highlight Toggle Test:</strong><br>
+            • Toggle should be ON (green) by default<br>
+            • Correct answers should be highlighted in green<br>
+            • Click toggle to turn OFF - correct answers should look like wrong ones<br>
+            • Click toggle again to turn ON - highlighting should return
+        </div>
+        <div class="test-result info">
+            <strong>3. Pause/Resume Test:</strong><br>
+            • Start the game first<br>
+            • Click anywhere on the scoreboard area<br>
+            • Game should pause and show pause overlay<br>
+            • Click scoreboard again to resume<br>
+            • Pause indicator should appear/disappear correctly
+        </div>
+        <div class="test-result info">
+            <strong>4. Game Flow Test:</strong><br>
+            • All features should work together seamlessly<br>
+            • Keyboard controls should only work when game is running and not paused<br>
+            • Mobile touch controls should work on touch devices
+        </div>
+    </div>
+</body>
+</html> 

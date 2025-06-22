@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 0 UX Fixes Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #00ffff;
+            margin: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .pass { background: rgba(0, 255, 0, 0.2); border: 1px solid #00ff00; }
+        .fail { background: rgba(255, 0, 0, 0.2); border: 1px solid #ff0000; }
+        .info { background: rgba(0, 255, 255, 0.1); border: 1px solid #00ffff; }
+        iframe { width: 100%; height: 400px; border: 1px solid #00ffff; margin: 10px 0; }
+        h1 { color: #00ffff; text-shadow: 0 0 10px #00ffff; }
+    </style>
+</head>
+<body>
+    <h1>✅ Phase 0: Critical UX Fixes Verification</h1>
+    <p>Testing that critical mobile UX issues have been resolved...</p>
+    
+    <iframe src="../index.html" id="gameFrame"></iframe>
+    
+    <div id="testResults"></div>
+
+    <script>
+        function log(type, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('testResults').appendChild(div);
+        }
+
+        function runPhase0Tests() {
+            const iframe = document.getElementById('gameFrame');
+            const gameDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            log('info', '🔍 PHASE 0 UX FIXES VERIFICATION');
+            
+            // Fix 1: Pause Overlay Clickable
+            const pauseOverlay = gameDoc.getElementById('pauseOverlay');
+            if (pauseOverlay) {
+                const pauseStyle = window.getComputedStyle(pauseOverlay);
+                if (pauseStyle.cursor === 'pointer') {
+                    log('pass', '✅ Pause overlay is clickable');
+                } else {
+                    log('fail', '❌ Pause overlay is not clickable');
+                }
+                
+                const mobileText = pauseOverlay.querySelector('.mobile-only');
+                const desktopText = pauseOverlay.querySelector('.desktop-only');
+                
+                if (mobileText && desktopText) {
+                    log('pass', '✅ Mobile/desktop pause instructions found');
+                    if (mobileText.textContent.includes('Tap anywhere')) {
+                        log('pass', '✅ Mobile instruction is clear');
+                    }
+                } else {
+                    log('fail', '❌ Missing responsive pause instructions');
+                }
+            }
+            
+            // Fix 2: Toggle Switch Structure
+            const highlightToggle = gameDoc.getElementById('highlightToggle');
+            if (highlightToggle) {
+                const toggleSwitch = highlightToggle.querySelector('.toggle-switch');
+                if (toggleSwitch) {
+                    log('pass', '✅ Toggle switch structure correct');
+                } else {
+                    log('fail', '❌ Toggle switch structure missing');
+                }
+            }
+            
+            // Fix 3: Viewport Meta Tag
+            const viewportMeta = gameDoc.querySelector('meta[name="viewport"]');
+            if (viewportMeta) {
+                const content = viewportMeta.getAttribute('content');
+                if (content.includes('width=device-width')) {
+                    log('pass', '✅ Viewport configured for mobile');
+                } else {
+                    log('fail', '❌ Viewport not mobile-optimized');
+                }
+            } else {
+                log('fail', '❌ No viewport meta tag');
+            }
+            
+            // Summary
+            const passCount = document.querySelectorAll('.pass').length;
+            const failCount = document.querySelectorAll('.fail').length;
+            
+            if (failCount === 0) {
+                log('pass', `✅ ALL PHASE 0 FIXES VERIFIED! Ready for Phase 1`);
+            } else {
+                log('fail', `❌ ${failCount} issues remain`);
+            }
+        }
+
+        document.getElementById('gameFrame').onload = function() {
+            setTimeout(runPhase0Tests, 1000);
+        };
+    </script>
+</body>
+</html> 

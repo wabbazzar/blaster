@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critical UX Issues Test - Card Blaster</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #00ffff;
+            margin: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .pass { background: rgba(0, 255, 0, 0.2); border: 1px solid #00ff00; }
+        .fail { background: rgba(255, 0, 0, 0.2); border: 1px solid #ff0000; }
+        .info { background: rgba(0, 255, 255, 0.1); border: 1px solid #00ffff; }
+        .warning { background: rgba(255, 255, 0, 0.2); border: 1px solid #ffff00; }
+        iframe { width: 100%; height: 400px; border: 1px solid #00ffff; margin: 10px 0; }
+        h1, h2 { color: #00ffff; text-shadow: 0 0 10px #00ffff; }
+    </style>
+</head>
+<body>
+    <h1>🚨 Critical UX Issues Detection Test</h1>
+    <p>Testing for critical mobile UX issues that block usability...</p>
+    
+    <iframe src="../index.html" id="gameFrame"></iframe>
+    
+    <div id="testResults"></div>
+
+    <script>
+        function log(type, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('testResults').appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function runCriticalUXTests() {
+            const iframe = document.getElementById('gameFrame');
+            const gameDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            log('info', '🔍 CRITICAL UX ISSUES DETECTION STARTED');
+            
+            // Issue 1: Pause Overlay Blocks Scoreboard
+            log('info', '--- Issue 1: Pause Overlay Blocking Scoreboard ---');
+            
+            const pauseOverlay = gameDoc.getElementById('pauseOverlay');
+            const scoreArea = gameDoc.getElementById('scoreArea');
+            
+            if (pauseOverlay && scoreArea) {
+                const pauseStyle = window.getComputedStyle(pauseOverlay);
+                const pauseZIndex = parseInt(pauseStyle.zIndex) || 0;
+                
+                log('info', `Pause overlay z-index: ${pauseZIndex}`);
+                
+                if (pauseZIndex >= 100) {
+                    log('fail', '❌ CRITICAL: Pause overlay will block scoreboard interaction');
+                    log('fail', '   When paused, users cannot click scoreboard to resume!');
+                } else {
+                    log('pass', '✅ Pause overlay z-index is reasonable');
+                }
+                
+                // Check if pause overlay covers full screen
+                if (pauseStyle.position === 'fixed' && 
+                    pauseStyle.top === '0px' && 
+                    pauseStyle.left === '0px') {
+                    log('fail', '❌ CRITICAL: Pause overlay covers entire screen');
+                    log('fail', '   Users cannot access any UI elements when paused!');
+                } else {
+                    log('pass', '✅ Pause overlay positioning looks reasonable');
+                }
+            } else {
+                log('fail', '❌ Could not find pause overlay or score area elements');
+            }
+            
+            // Issue 2: Scoreboard Button Conflicts  
+            log('info', '--- Issue 2: Scoreboard Button Conflicts ---');
+            
+            const highlightToggle = gameDoc.getElementById('highlightToggle');
+            
+            if (scoreArea && highlightToggle) {
+                // Check if toggle is inside scoreboard
+                const isToggleInScoreboard = scoreArea.contains(highlightToggle);
+                
+                log('info', `Toggle switch is inside scoreboard: ${isToggleInScoreboard}`);
+                
+                if (isToggleInScoreboard) {
+                    log('fail', '❌ CRITICAL: Toggle switch is inside clickable scoreboard!');
+                    log('fail', '   Clicking toggle will trigger both pause AND toggle actions!');
+                } else {
+                    log('pass', '✅ Toggle switch is separate from scoreboard');
+                }
+                
+                // Check if entire scoreboard appears clickable
+                const scoreStyle = window.getComputedStyle(scoreArea);
+                const scoreAreaCursor = scoreStyle.cursor;
+                if (scoreAreaCursor === 'pointer') {
+                    log('warning', '⚠️  Entire scoreboard appears clickable (cursor: pointer)');
+                    log('warning', '   This may interfere with toggle switch interaction');
+                }
+            }
+            
+            // Issue 3: Missing Touch Controls
+            log('info', '--- Issue 3: Missing Touch Controls ---');
+            
+            const gameBoard = gameDoc.getElementById('gameBoard');
+            
+            if (gameBoard) {
+                // Check for viewport meta tag
+                const viewportMeta = gameDoc.querySelector('meta[name="viewport"]');
+                if (viewportMeta) {
+                    log('pass', '✅ Viewport meta tag found');
+                } else {
+                    log('fail', '❌ CRITICAL: No viewport meta tag!');
+                }
+                
+                // Since we can't easily detect event listeners, check for mobile-specific CSS
+                const bodyStyle = window.getComputedStyle(gameDoc.body);
+                const touchAction = bodyStyle.touchAction;
+                
+                log('info', `Touch action: ${touchAction}`);
+                
+                if (touchAction === 'manipulation') {
+                    log('pass', '✅ Touch action is optimized for mobile');
+                } else {
+                    log('warning', '⚠️  Touch action may not be optimized');
+                }
+            }
+            
+            // Issue 4: Pause Resume Instructions
+            log('info', '--- Issue 4: Confusing Pause/Resume Instructions ---');
+            
+            if (pauseOverlay) {
+                const pauseText = pauseOverlay.querySelector('.overlay-text');
+                if (pauseText) {
+                    const instruction = pauseText.textContent;
+                    log('info', `Pause instruction: "${instruction}"`);
+                    
+                    if (instruction.includes('Click scoreboard')) {
+                        log('fail', '❌ CRITICAL: Confusing pause instruction!');
+                        log('fail', '   Tells users to "click scoreboard" but overlay blocks scoreboard');
+                        log('fail', '   Users will be trapped in pause state!');
+                    } else if (instruction.includes('anywhere') || instruction.includes('overlay')) {
+                        log('pass', '✅ Clear pause resume instruction');
+                    } else {
+                        log('warning', '⚠️  Pause resume instruction may be unclear');
+                    }
+                }
+            }
+            
+            // Summary
+            log('info', '--- CRITICAL UX ISSUES SUMMARY ---');
+            const failMessages = document.querySelectorAll('.fail');
+            const criticalIssues = failMessages.length;
+            
+            if (criticalIssues > 0) {
+                log('fail', `🚨 FOUND ${criticalIssues} CRITICAL UX ISSUES!`);
+                log('fail', '   These issues make the game unusable on mobile devices');
+                log('fail', '   Must be fixed before any other mobile development');
+            } else {
+                log('pass', '✅ No critical UX issues detected');
+                log('pass', '   Ready for mobile touch controls implementation');
+            }
+        }
+
+        // Wait for iframe to load
+        document.getElementById('gameFrame').onload = function() {
+            setTimeout(runCriticalUXTests, 1000);
+        };
+    </script>
+</body>
+</html> 
