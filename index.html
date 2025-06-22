@@ -481,10 +481,19 @@
             <div class="control-section">
                 <div class="control-title">Mobile Controls</div>
                 <div class="control-item">
-                    <span class="control-key">Touch & Drag</span> Move ship
+                    <span class="control-key">Tap Left Zone</span> Move ship left
                 </div>
                 <div class="control-item">
-                    <span class="control-key">Tap Screen</span> Fire projectile
+                    <span class="control-key">Tap Right Zone</span> Move ship right
+                </div>
+                <div class="control-item">
+                    <span class="control-key">Tap Game Board</span> Fire projectile
+                </div>
+                <div class="control-item">
+                    <span class="control-key">Swipe Down</span> Continuous fire
+                </div>
+                <div class="control-item">
+                    <span class="control-key">Long Press</span> Rapid fire
                 </div>
                 <div class="control-item">
                     <span class="control-key">Tap Scoreboard</span> Pause/Resume
@@ -526,6 +535,9 @@
             
             // Setup pause overlay for resume
             setupPauseOverlay();
+            
+            // Setup touch controls for mobile
+            setupTouchControls();
             
             // Setup start button
             setupStartButton();
@@ -1094,6 +1106,253 @@
                 console.log('All targets cleared - loading new question');
                 loadNewQuestion();
             }
+        }
+
+        // Phase 1: Tetris-Style Touch Controls Implementation
+        function setupTouchControls() {
+            const wrapper = document.getElementById('wrapper');
+            const gameBoard = document.getElementById('gameBoard');
+            
+            // Touch state tracking
+            let touchStartTime = 0;
+            let touchStartPos = { x: 0, y: 0 };
+            let longPressTimer = null;
+            let isSwipeDown = false;
+            let continuousFireTimer = null;
+            
+            // Get touch zones based on screen layout
+            function getTouchZones() {
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                
+                return {
+                    // Left zone: left side of screen up to game board
+                    leftZone: {
+                        left: wrapperRect.left,
+                        right: gameBoardRect.left,
+                        top: wrapperRect.top,
+                        bottom: wrapperRect.bottom
+                    },
+                    // Right zone: right side of screen from game board edge
+                    rightZone: {
+                        left: gameBoardRect.right,
+                        right: wrapperRect.right,
+                        top: wrapperRect.top,
+                        bottom: wrapperRect.bottom
+                    },
+                    // Game board zone: the actual game area
+                    gameBoard: {
+                        left: gameBoardRect.left,
+                        right: gameBoardRect.right,
+                        top: gameBoardRect.top,
+                        bottom: gameBoardRect.bottom
+                    }
+                };
+            }
+            
+            // Determine which zone was touched
+            function getTouchZone(x, y) {
+                const zones = getTouchZones();
+                
+                // Check game board first (highest priority)
+                if (x >= zones.gameBoard.left && x <= zones.gameBoard.right &&
+                    y >= zones.gameBoard.top && y <= zones.gameBoard.bottom) {
+                    return 'gameBoard';
+                }
+                
+                // Check left zone
+                if (x >= zones.leftZone.left && x <= zones.leftZone.right &&
+                    y >= zones.leftZone.top && y <= zones.leftZone.bottom) {
+                    return 'left';
+                }
+                
+                // Check right zone
+                if (x >= zones.rightZone.left && x <= zones.rightZone.right &&
+                    y >= zones.rightZone.top && y <= zones.rightZone.bottom) {
+                    return 'right';
+                }
+                
+                return 'outside';
+            }
+            
+            // Visual feedback for touch zones
+            function showTouchFeedback(zone, x, y) {
+                const feedback = document.createElement('div');
+                feedback.className = `touch-feedback touch-${zone}`;
+                feedback.style.position = 'fixed';
+                feedback.style.left = (x - 15) + 'px';
+                feedback.style.top = (y - 15) + 'px';
+                feedback.style.width = '30px';
+                feedback.style.height = '30px';
+                feedback.style.borderRadius = '50%';
+                feedback.style.pointerEvents = 'none';
+                feedback.style.zIndex = '1000';
+                feedback.style.opacity = '0.8';
+                feedback.style.transition = 'all 0.3s ease';
+                
+                // Zone-specific styling
+                if (zone === 'left') {
+                    feedback.style.background = 'radial-gradient(circle, rgba(255,0,153,0.8) 0%, rgba(255,0,153,0) 70%)';
+                    feedback.innerHTML = '←';
+                    feedback.style.color = '#ff0099';
+                    feedback.style.fontSize = '16px';
+                    feedback.style.textAlign = 'center';
+                    feedback.style.lineHeight = '30px';
+                } else if (zone === 'right') {
+                    feedback.style.background = 'radial-gradient(circle, rgba(0,255,0,0.8) 0%, rgba(0,255,0,0) 70%)';
+                    feedback.innerHTML = '→';
+                    feedback.style.color = '#00ff00';
+                    feedback.style.fontSize = '16px';
+                    feedback.style.textAlign = 'center';
+                    feedback.style.lineHeight = '30px';
+                } else if (zone === 'gameBoard') {
+                    feedback.style.background = 'radial-gradient(circle, rgba(0,255,255,0.8) 0%, rgba(0,255,255,0) 70%)';
+                    feedback.innerHTML = '●';
+                    feedback.style.color = '#00ffff';
+                    feedback.style.fontSize = '12px';
+                    feedback.style.textAlign = 'center';
+                    feedback.style.lineHeight = '30px';
+                }
+                
+                document.body.appendChild(feedback);
+                
+                // Animate and remove
+                setTimeout(() => {
+                    feedback.style.transform = 'scale(1.5)';
+                    feedback.style.opacity = '0';
+                }, 50);
+                
+                setTimeout(() => {
+                    if (feedback.parentNode) {
+                        feedback.parentNode.removeChild(feedback);
+                    }
+                }, 350);
+            }
+            
+            // Touch start handler
+            wrapper.addEventListener('touchstart', (e) => {
+                if (!gameRunning || gamePaused) return;
+                
+                e.preventDefault();
+                touchStartTime = performance.now();
+                const touch = e.touches[0];
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+                isSwipeDown = false;
+                
+                const zone = getTouchZone(touch.clientX, touch.clientY);
+                
+                // Setup long press for rapid fire (only in game board)
+                if (zone === 'gameBoard') {
+                    longPressTimer = setTimeout(() => {
+                        if (longPressTimer && gameRunning && !gamePaused) {
+                            // Start continuous rapid fire
+                            continuousFireTimer = setInterval(() => {
+                                if (gameRunning && !gamePaused) {
+                                    createProjectile();
+                                }
+                            }, 150); // Fire every 150ms
+                            
+                            showTouchFeedback('gameBoard', touch.clientX, touch.clientY);
+                            console.log('Long press: rapid fire started');
+                            
+                            // Haptic feedback if supported
+                            if ('vibrate' in navigator) {
+                                navigator.vibrate(100);
+                            }
+                        }
+                        longPressTimer = null;
+                    }, 500); // 500ms for long press
+                }
+            }, { passive: false });
+            
+            // Touch move handler
+            wrapper.addEventListener('touchmove', (e) => {
+                if (!gameRunning || gamePaused) return;
+                
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const currentPos = { x: touch.clientX, y: touch.clientY };
+                const deltaY = currentPos.y - touchStartPos.y;
+                const deltaX = currentPos.x - touchStartPos.x;
+                
+                // Check for downward swipe in game board
+                const zone = getTouchZone(touch.clientX, touch.clientY);
+                if (zone === 'gameBoard' && deltaY > 30 && Math.abs(deltaX) < 50) {
+                    if (!isSwipeDown) {
+                        isSwipeDown = true;
+                        // Start continuous firing on swipe down
+                        if (continuousFireTimer) clearInterval(continuousFireTimer);
+                        continuousFireTimer = setInterval(() => {
+                            if (gameRunning && !gamePaused) {
+                                createProjectile();
+                            }
+                        }, 200); // Fire every 200ms
+                        console.log('Swipe down: continuous fire started');
+                    }
+                }
+                
+                // Cancel long press if moving significantly
+                if (longPressTimer && (Math.abs(deltaX) > 15 || Math.abs(deltaY) > 15)) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }, { passive: false });
+            
+            // Touch end handler
+            wrapper.addEventListener('touchend', (e) => {
+                if (!gameRunning || gamePaused) return;
+                
+                e.preventDefault();
+                
+                // Stop continuous firing
+                if (continuousFireTimer) {
+                    clearInterval(continuousFireTimer);
+                    continuousFireTimer = null;
+                }
+                
+                // Cancel long press timer
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                
+                const endTime = performance.now();
+                const duration = endTime - touchStartTime;
+                const touch = e.changedTouches[0];
+                const endPos = { x: touch.clientX, y: touch.clientY };
+                
+                const deltaX = endPos.x - touchStartPos.x;
+                const deltaY = endPos.y - touchStartPos.y;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                // Only process taps (not swipes) and not if it was a swipe down
+                if (distance < 25 && duration < 300 && !isSwipeDown) {
+                    const zone = getTouchZone(touch.clientX, touch.clientY);
+                    
+                    if (zone === 'left') {
+                        // Left zone tap - move ship left
+                        moveShip(-1);
+                        showTouchFeedback('left', touch.clientX, touch.clientY);
+                        console.log('Touch: left zone -> move left');
+                    } else if (zone === 'right') {
+                        // Right zone tap - move ship right
+                        moveShip(1);
+                        showTouchFeedback('right', touch.clientX, touch.clientY);
+                        console.log('Touch: right zone -> move right');
+                    } else if (zone === 'gameBoard') {
+                        // Game board tap - fire projectile
+                        createProjectile();
+                        showTouchFeedback('gameBoard', touch.clientX, touch.clientY);
+                        console.log('Touch: game board -> fire projectile');
+                    }
+                }
+                
+                // Reset swipe state
+                isSwipeDown = false;
+            }, { passive: false });
+            
+            console.log('Touch controls initialized (Tetris-style zones)');
         }
 
         // Initialize game when page loads

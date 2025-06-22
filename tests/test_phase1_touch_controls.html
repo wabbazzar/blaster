@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1 Touch Controls Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #00ffff;
+            margin: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .pass { background: rgba(0, 255, 0, 0.2); border: 1px solid #00ff00; }
+        .fail { background: rgba(255, 0, 0, 0.2); border: 1px solid #ff0000; }
+        .info { background: rgba(0, 255, 255, 0.1); border: 1px solid #00ffff; }
+        iframe { width: 100%; height: 500px; border: 1px solid #00ffff; margin: 10px 0; }
+        h1 { color: #00ffff; text-shadow: 0 0 10px #00ffff; }
+        .instructions {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 Phase 1: Touch Controls Test</h1>
+    <p>Testing Tetris-style zone-based touch controls...</p>
+    
+    <div class="instructions">
+        <strong>Manual Test Instructions:</strong><br>
+        1. Start the game in the iframe below<br>
+        2. Try tapping left side of screen → should move ship left<br>
+        3. Try tapping right side of screen → should move ship right<br>
+        4. Try tapping game board → should fire projectile<br>
+        5. Try swiping down on game board → should start continuous fire<br>
+        6. Try long press on game board → should start rapid fire<br>
+        7. Check console for touch event logs
+    </div>
+    
+    <iframe src="../index.html" id="gameFrame"></iframe>
+    
+    <div id="testResults"></div>
+
+    <script>
+        function log(type, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('testResults').appendChild(div);
+        }
+
+        function runPhase1Tests() {
+            const iframe = document.getElementById('gameFrame');
+            const gameDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            log('info', '🔍 PHASE 1 TOUCH CONTROLS VERIFICATION');
+            
+            // Test 1: Touch Control Elements
+            const wrapper = gameDoc.getElementById('wrapper');
+            const gameBoard = gameDoc.getElementById('gameBoard');
+            
+            if (wrapper && gameBoard) {
+                log('pass', '✅ Touch control elements found');
+                
+                // Check touch zones have adequate space
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                
+                const leftZoneWidth = gameBoardRect.left - wrapperRect.left;
+                const rightZoneWidth = wrapperRect.right - gameBoardRect.right;
+                
+                log('info', `Left zone: ${leftZoneWidth}px, Right zone: ${rightZoneWidth}px`);
+                
+                if (leftZoneWidth > 20 && rightZoneWidth > 20) {
+                    log('pass', '✅ Touch zones have adequate space');
+                } else {
+                    log('fail', '❌ Touch zones may be too narrow for mobile use');
+                }
+            } else {
+                log('fail', '❌ Required touch control elements not found');
+            }
+            
+            // Test 2: Mobile Control Instructions
+            const startOverlay = gameDoc.getElementById('startOverlay');
+            if (startOverlay) {
+                const controlText = startOverlay.textContent;
+                if (controlText.includes('Tap Left Zone') && 
+                    controlText.includes('Tap Right Zone') &&
+                    controlText.includes('Tap Game Board')) {
+                    log('pass', '✅ Mobile control instructions updated');
+                } else {
+                    log('fail', '❌ Mobile control instructions not properly updated');
+                }
+            }
+            
+            // Test 3: Touch Action Optimization
+            const bodyStyle = window.getComputedStyle(gameDoc.body);
+            const touchAction = bodyStyle.touchAction;
+            
+            if (touchAction === 'manipulation') {
+                log('pass', '✅ Touch action optimized for games');
+            } else {
+                log('info', `ℹ️  Touch action: ${touchAction} (may work but not optimized)`);
+            }
+            
+            // Summary
+            const passCount = document.querySelectorAll('.pass').length;
+            const failCount = document.querySelectorAll('.fail').length;
+            
+            if (failCount === 0) {
+                log('pass', `✅ PHASE 1 TOUCH CONTROLS VERIFIED!`);
+                log('info', '📱 Test touch controls manually in the game above');
+            } else {
+                log('fail', `❌ ${failCount} issues found - need fixing before Phase 2`);
+            }
+        }
+
+        document.getElementById('gameFrame').onload = function() {
+            setTimeout(runPhase1Tests, 1000);
+        };
+    </script>
+</body>
+</html> 
