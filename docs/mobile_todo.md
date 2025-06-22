@@ -45,11 +45,13 @@
 ## Phase 1: Tetris-Style Touch Controls Implementation
 
 ### 1.1: Zone-Based Touch Controls (Following Tetris Pattern)
-- [ ] **Left Zone Tap**: Move ship left (like Tetris left movement)
-- [ ] **Right Zone Tap**: Move ship right (like Tetris right movement)  
-- [ ] **Game Board Tap**: Fire projectile (like Tetris rotation)
-- [ ] **Swipe Down**: Continuous fire mode (like Tetris soft drop)
-- [ ] **Long Press**: Special action or rapid fire (like Tetris hard drop)
+- [x] **Left Zone Tap**: Move ship left (like Tetris left movement)
+- [x] **Right Zone Tap**: Move ship right (like Tetris right movement)  
+- [x] **Game Board Tap**: Fire projectile (like Tetris rotation)
+- [x] **Swipe Down**: Continuous fire mode (like Tetris soft drop)
+- [x] **Long Press**: Rapid fire (like Tetris hard drop)
+- [ ] **NEW: Swipe Left**: Move ship left (additional modality)
+- [ ] **NEW: Swipe Right**: Move ship right (additional modality)
 
 ### 1.2: Mobile Game Board Dimensions (Tetris-Inspired)
 ```css
@@ -62,9 +64,9 @@
 }
 ```
 
-### 1.3: Touch Zone Implementation
+### 1.3: Enhanced Touch Zone Implementation
 ```javascript
-// Touch zones following Tetris mobile pattern
+// Touch zones following Tetris mobile pattern with swipe support
 function setupTouchZones() {
     const gameContainer = document.querySelector('#wrapper');
     const gameBoard = document.getElementById('gameBoard');
@@ -77,22 +79,31 @@ function setupTouchZones() {
         scoreboard: { /* Scoreboard area */ }
     };
     
-    // Zone-based touch handling
+    // Zone-based touch handling with swipe detection
     gameContainer.addEventListener('touchstart', handleTouchZones);
+    gameContainer.addEventListener('touchmove', handleSwipeGestures);
+    gameContainer.addEventListener('touchend', handleTouchEnd);
 }
 ```
 
 ### 1.4: Visual Touch Feedback
-- [ ] Add touch ripple effects (like Tetris)
-- [ ] Show zone boundaries during touch
-- [ ] Haptic feedback where supported
-- [ ] Visual confirmation of all actions
+- [x] Add touch ripple effects (like Tetris)
+- [x] Show zone boundaries during touch
+- [x] Haptic feedback where supported
+- [x] Visual confirmation of all actions
 
 ## Phase 2: Mobile-Optimized Layout (Tetris-Style)
 
-### 2.1: Mobile Header Layout
+### 2.1: Start Screen UI Improvements
+- [ ] **NEW: Move Highlight Toggle to Start Screen**
+- [ ] Remove highlight toggle from scoreboard to prevent conflicts
+- [ ] Add practice mode section to start overlay
+- [ ] Ensure toggle state persists between games
+- [ ] Test toggle functionality on start screen
+
+### 2.2: Mobile Header Layout
 ```css
-/* Mobile header with score and controls */
+/* Mobile header with score and controls - simplified */
 .game-header {
     display: flex;
     justify-content: space-between;
@@ -107,20 +118,16 @@ function setupTouchZones() {
     gap: 20px;
 }
 
-.controls-section {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
+/* Removed controls-section - moved to start screen */
 ```
 
-### 2.2: Separated Control Elements
-- [ ] **Pause Button**: Dedicated button (not scoreboard)
-- [ ] **Highlight Toggle**: Independent switch
-- [ ] **Score Display**: Non-interactive display
-- [ ] **Level Display**: Non-interactive display
+### 2.3: Separated Control Elements
+- [x] **Pause Button**: Dedicated button (scoreboard click)
+- [ ] **Highlight Toggle**: Moved to start screen (NEW)
+- [x] **Score Display**: Non-interactive display
+- [x] **Level Display**: Non-interactive display
 
-### 2.3: Mobile-First Responsive Design
+### 2.4: Mobile-First Responsive Design
 ```css
 /* Mobile breakpoints following Tetris patterns */
 @media (max-width: 480px) {

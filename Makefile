@@ -193,3 +193,7 @@ test-all:
 # New features testing
 test-new-features:
 	@open http://localhost:8000/tests/test_new_features.html || xdg-open http://localhost:8000/tests/test_new_features.html
+
+# Swipe controls and toggle testing
+test-swipe-toggle:
+	@open http://localhost:8000/tests/test_swipe_and_toggle_features.html || xdg-open http://localhost:8000/tests/test_swipe_and_toggle_features.html

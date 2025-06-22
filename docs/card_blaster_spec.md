@@ -21,6 +21,16 @@ Card Blaster is an arcade-style flashcard game combining memorization with hand-
 - **Shooting**: Spacebar to fire projectiles at targets
 - **Ship**: Stays at bottom of screen, moves horizontally like Galaxian
 
+### Mobile Touch Controls (NEW)
+- **Left Zone Tap**: Move ship left
+- **Right Zone Tap**: Move ship right  
+- **Game Board Tap**: Fire projectile
+- **Swipe Down**: Continuous fire mode
+- **Long Press**: Rapid fire mode
+- **Swipe Left**: Move ship left (additional modality)
+- **Swipe Right**: Move ship right (additional modality)
+- **Scoreboard Tap**: Pause/Resume game
+
 ## Visual Design - Tron Theme
 
 ### Aesthetic Elements
@@ -260,11 +270,12 @@ Testing Priority:
 
 ## Practice Mode System
 
-### Toggle Switch
-- **Visual toggle in UI for practice mode on/off**
+### Toggle Switch (Moved to Start Screen)
+- **Visual toggle in start overlay for practice mode on/off**
 - **Correct Answer Highlighting**: In practice mode, correct answers have distinct visual indicator
 - **Learning Aid**: Subtle glow or border around correct targets in practice mode
 - **Performance Tracking**: Separate scoring for practice vs normal mode
+- **Persistent Setting**: Toggle state remembered between game sessions
 
 ### Performance
 - **Frame Rate**: 60 FPS smooth gameplay

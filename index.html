@@ -339,6 +339,36 @@
             transform: scale(0.95);
         }
         
+        /* Practice Mode Section in Start Overlay */
+        .practice-mode-section {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .practice-title {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        
+        .practice-mode-section .highlight-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+        }
+        
         /* Target styles */
         .target {
             transition: all 0.1s ease;
@@ -435,18 +465,11 @@
             <div id="questionText">Question goes here</div>
         </div>
 
-        <!-- Score Display with Toggle Switch -->
+        <!-- Score Display WITHOUT Toggle Switch -->
         <div id="scoreArea">
             <div class="score-section">
                 <div class="score-item">Score: <span id="scoreValue">0</span></div>
                 <div class="level-item">Level: <span id="levelValue">1</span></div>
-            </div>
-            
-            <div class="highlight-toggle">
-                <span>Highlight</span>
-                <div class="toggle-switch active" id="highlightToggle">
-                    <div class="toggle-slider"></div>
-                </div>
             </div>
             
             <div class="pause-indicator" id="pauseIndicator">PAUSED</div>
@@ -463,6 +486,17 @@
     <div class="game-overlay active" id="startOverlay">
         <h1 class="overlay-title menu-title">Card Blaster</h1>
         <p class="overlay-subtitle">Arcade Learning Game</p>
+        
+        <!-- Practice Mode Toggle Section -->
+        <div class="practice-mode-section">
+            <div class="practice-title">Practice Mode</div>
+            <div class="highlight-toggle">
+                <span>Highlight Correct Answers</span>
+                <div class="toggle-switch active" id="highlightToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+        </div>
         
         <div class="controls-container">
             <div class="control-section">
@@ -485,6 +519,9 @@
                 </div>
                 <div class="control-item">
                     <span class="control-key">Tap Right Zone</span> Move ship right
+                </div>
+                <div class="control-item">
+                    <span class="control-key">Swipe Left/Right</span> Move ship left/right
                 </div>
                 <div class="control-item">
                     <span class="control-key">Tap Game Board</span> Fire projectile
@@ -545,11 +582,11 @@
             console.log('Game initialized');
         }
         
-        // Setup highlight toggle functionality
+        // Setup highlight toggle functionality (now on start screen)
         function setupHighlightToggle() {
             const toggle = document.getElementById('highlightToggle');
             toggle.addEventListener('click', function(e) {
-                // Prevent event bubbling to scoreboard
+                // No need to prevent bubbling since it's not in scoreboard anymore
                 e.stopPropagation();
                 
                 highlightCorrectAnswers = !highlightCorrectAnswers;
@@ -561,7 +598,7 @@
                     toggle.classList.remove('active');
                 }
                 
-                // Update existing targets
+                // Update existing targets (if any)
                 updateTargetHighlighting();
                 
                 console.log('Highlight toggle:', highlightCorrectAnswers ? 'ON' : 'OFF');
@@ -587,7 +624,7 @@
             });
         }
         
-        // Setup scoreboard controls for pause/resume
+        // Setup scoreboard controls for pause/resume (simplified - no toggle)
         function setupScoreboardControls() {
             const scoreArea = document.getElementById('scoreArea');
             const pauseIndicator = document.getElementById('pauseIndicator');
@@ -1119,6 +1156,8 @@
             let longPressTimer = null;
             let isSwipeDown = false;
             let continuousFireTimer = null;
+            let isSwipeRight = false;
+            let isSwipeLeft = false;
             
             // Get touch zones based on screen layout
             function getTouchZones() {
@@ -1238,6 +1277,8 @@
                 const touch = e.touches[0];
                 touchStartPos = { x: touch.clientX, y: touch.clientY };
                 isSwipeDown = false;
+                isSwipeRight = false;
+                isSwipeLeft = false;
                 
                 const zone = getTouchZone(touch.clientX, touch.clientY);
                 
@@ -1292,6 +1333,23 @@
                     }
                 }
                 
+                // NEW: Check for horizontal swipes anywhere on screen
+                if (Math.abs(deltaX) > 40 && Math.abs(deltaY) < 30) {
+                    if (deltaX > 0 && !isSwipeRight) {
+                        // Swipe right - move ship right
+                        isSwipeRight = true;
+                        moveShip(1);
+                        showTouchFeedback('right', touch.clientX, touch.clientY);
+                        console.log('Swipe right: move ship right');
+                    } else if (deltaX < 0 && !isSwipeLeft) {
+                        // Swipe left - move ship left
+                        isSwipeLeft = true;
+                        moveShip(-1);
+                        showTouchFeedback('left', touch.clientX, touch.clientY);
+                        console.log('Swipe left: move ship left');
+                    }
+                }
+                
                 // Cancel long press if moving significantly
                 if (longPressTimer && (Math.abs(deltaX) > 15 || Math.abs(deltaY) > 15)) {
                     clearTimeout(longPressTimer);
@@ -1327,7 +1385,7 @@
                 const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                 
                 // Only process taps (not swipes) and not if it was a swipe down
-                if (distance < 25 && duration < 300 && !isSwipeDown) {
+                if (distance < 25 && duration < 300 && !isSwipeDown && !isSwipeLeft && !isSwipeRight) {
                     const zone = getTouchZone(touch.clientX, touch.clientY);
                     
                     if (zone === 'left') {
@@ -1348,8 +1406,10 @@
                     }
                 }
                 
-                // Reset swipe state
+                // Reset swipe states
                 isSwipeDown = false;
+                isSwipeRight = false;
+                isSwipeLeft = false;
             }, { passive: false });
             
             console.log('Touch controls initialized (Tetris-style zones)');
