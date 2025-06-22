@@ -136,6 +136,64 @@
             font-weight: bold;
         }
         
+        .lives-item {
+            color: #ff0099;
+            text-shadow: 0 0 10px #ff0099;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: bold;
+        }
+        
+        .deck-selector {
+            width: min(400px, 90vw);
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .deck-selector select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .deck-selector select option {
+            background: #000000;
+            color: #00ffff;
+        }
+        
+        .card-state-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            z-index: 10;
+        }
+        
+        .card-state-new {
+            background: #ffff00;
+            box-shadow: 0 0 5px #ffff00;
+        }
+        
+        .card-state-struggling {
+            background: #ff6600;
+            box-shadow: 0 0 5px #ff6600;
+        }
+        
+        .card-state-learned {
+            background: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
+        }
+        
         /* Toggle switch for correct answer highlighting */
         .highlight-toggle {
             display: flex;
@@ -460,16 +518,26 @@
     <div id="wrapper">
         <h1>Card Blaster</h1>
 
+        <!-- Deck Selection -->
+        <div class="deck-selector">
+            <label for="deckSelect" style="color: #00ffff; margin-bottom: 5px; display: block;">Select Deck:</label>
+            <select id="deckSelect">
+                <option value="data_science_cards.json">Data Science Fundamentals</option>
+                <option value="chinese_language_cards.json">Chinese Language Basics</option>
+            </select>
+        </div>
+
         <!-- Question Area -->
         <div id="questionArea">
             <div id="questionText">Question goes here</div>
         </div>
 
-        <!-- Score Display WITHOUT Toggle Switch -->
+        <!-- Score Display WITH Lives -->
         <div id="scoreArea">
             <div class="score-section">
                 <div class="score-item">Score: <span id="scoreValue">0</span></div>
                 <div class="level-item">Level: <span id="levelValue">1</span></div>
+                <div class="lives-item">Lives: <span id="livesValue">5</span></div>
             </div>
             
             <div class="pause-indicator" id="pauseIndicator">PAUSED</div>
@@ -768,18 +836,16 @@
                 // Discover available decks
                 await discoverAvailableDecks();
                 
-                // For now, default to data science deck
-                // Later we'll add deck selection UI
-                if (availableDecks.length > 0) {
-                    await loadSelectedDeck(availableDecks[0].filename, 1);
-                } else {
-                    // Fallback to default deck loading
-                    await loadDefaultDeck();
-                }
+                // Get selected deck from dropdown
+                const deckSelect = document.getElementById('deckSelect');
+                const selectedDeckFilename = deckSelect.value;
+                
+                // Load the selected deck
+                await loadSelectedDeck(selectedDeckFilename, 1);
             } catch (error) {
                 console.error('Error initializing progressive gameplay:', error);
-                // Fallback to original flashcard loading
-                loadFlashcards();
+                // Fallback to default deck loading
+                await loadDefaultDeck();
             }
         }
         
@@ -1024,7 +1090,7 @@
         }
         
         function updateLivesDisplay() {
-            // Update lives in HUD (will implement UI later)
+            document.getElementById('livesValue').textContent = lives;
             console.log(`Lives: ${lives}/${maxLives}`);
         }
         
