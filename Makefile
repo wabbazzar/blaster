@@ -233,6 +233,17 @@ test-pwa-progressive:
 test-performance:
 	@open http://localhost:8000/tests/performance_test.html || xdg-open http://localhost:8000/tests/performance_test.html
 
+# Mobile device testing info
+device-test:
+	@echo "Connect mobile device and navigate to:"
+	@echo "http://$(shell ifconfig | grep 'inet ' | grep -v 127.0.0.1 | head -1 | awk '{print $$2}' || echo 'localhost'):8000/"
+	@echo ""
+	@echo "Mobile features:"
+	@echo "  • Touch controls + gesture recognition"
+	@echo "  • PWA installation support"
+	@echo "  • Offline gameplay capability"
+	@echo "  • Haptic feedback (where supported)"
+	
 # Automated progressive test suite
 test-all-progressive:
 	@echo "Running comprehensive progressive gameplay tests..."

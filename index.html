@@ -739,10 +739,13 @@
             gamePaused = false;
             score = 0;
             level = 1;
+            lives = 5; // Reset lives
+            currentProgressionLevel = 1; // Reset progression level
             
             // Update displays
             updateScore(0);
             updateLevel(1);
+            updateLivesDisplay();
             
             // Clear existing targets and projectiles
             targets.forEach(target => target.element.remove());
@@ -753,10 +756,31 @@
             // Start game loops
             startGameLoops();
             
-            // Load first question
-            loadFlashcards();
+            // Initialize progressive gameplay
+            initializeProgressiveGameplay();
             
-            console.log('Game started');
+            console.log('Game started with progressive gameplay');
+        }
+        
+        // Initialize progressive gameplay system
+        async function initializeProgressiveGameplay() {
+            try {
+                // Discover available decks
+                await discoverAvailableDecks();
+                
+                // For now, default to data science deck
+                // Later we'll add deck selection UI
+                if (availableDecks.length > 0) {
+                    await loadSelectedDeck(availableDecks[0].filename, 1);
+                } else {
+                    // Fallback to default deck loading
+                    await loadDefaultDeck();
+                }
+            } catch (error) {
+                console.error('Error initializing progressive gameplay:', error);
+                // Fallback to original flashcard loading
+                loadFlashcards();
+            }
         }
         
         // Start game update loops
@@ -773,17 +797,42 @@
             }, 50);
         }
         
-        // Phase 6: Data Integration
+        // Phase 6: Data Integration - Enhanced with Progressive Gameplay
         let flashcards = [];
         let currentQuestion = null;
-
-        // Phase 7: Scoring System
+        let availableDecks = [];
+        let selectedDeck = null;
+        let currentProgressionLevel = 1;
+        
+        // Progressive Card Learning System
+        let cardStates = new Map(); // Maps card ID to { state, consecutiveCorrect }
+        let learnedCards = new Set();
+        let strugglingCards = new Set();
+        
+        // Phase 7: Scoring System - Enhanced
         let score = 0;
         let level = 1;
+        let lives = 5; // Starting lives
+        let maxLives = 10;
 
         function updateScore(points) {
+            const oldScore = score;
             score += points;
             document.getElementById('scoreValue').textContent = score;
+            
+            // Progressive Gameplay: Gain life every 1000 points
+            if (points > 0) {
+                const oldThousands = Math.floor(oldScore / 1000);
+                const newThousands = Math.floor(score / 1000);
+                
+                if (newThousands > oldThousands) {
+                    const livesGained = newThousands - oldThousands;
+                    for (let i = 0; i < livesGained; i++) {
+                        gainLife('score_milestone');
+                    }
+                }
+            }
+            
             console.log('Score updated:', score);
         }
 
@@ -793,42 +842,324 @@
             console.log('Level updated:', level);
         }
 
-        async function loadFlashcards() {
+        // Progressive Gameplay: Deck Discovery System
+        async function discoverAvailableDecks() {
+            const potentialDecks = [
+                'data_science_cards.json',
+                'chinese_language_cards.json'
+            ];
+            
+            availableDecks = [];
+            
+            for (const deckFile of potentialDecks) {
+                try {
+                    const response = await fetch(`assets/${deckFile}`);
+                    if (response.ok) {
+                        const deckData = await response.json();
+                        if (deckData.metadata && deckData.cards) {
+                            availableDecks.push({
+                                filename: deckFile,
+                                metadata: deckData.metadata,
+                                cards: deckData.cards
+                            });
+                            console.log(`Discovered deck: ${deckData.metadata.deck_name}`);
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Could not load deck ${deckFile}:`, error);
+                }
+            }
+            
+            return availableDecks;
+        }
+        
+        async function loadSelectedDeck(deckFilename, startingLevel = 1) {
             try {
-                const response = await fetch('assets/data_science_cards.json');
-                flashcards = await response.json();
-                console.log('Loaded flashcards:', flashcards.length);
+                const deck = availableDecks.find(d => d.filename === deckFilename);
+                if (!deck) {
+                    throw new Error(`Deck ${deckFilename} not found`);
+                }
+                
+                selectedDeck = deck;
+                flashcards = deck.cards;
+                currentProgressionLevel = startingLevel;
+                
+                // Initialize card states
+                initializeCardStates();
+                
+                console.log(`Loaded deck: ${deck.metadata.deck_name}`);
+                console.log(`Starting at level: ${startingLevel}`);
+                console.log(`Total cards: ${flashcards.length}`);
+                
                 loadNewQuestion();
             } catch (error) {
-                console.error('Error loading flashcards:', error);
-                // Fallback data
-                flashcards = [
-                    {
-                        "id": 1,
-                        "term": "Machine Learning",
-                        "definition": "A type of artificial intelligence where computers learn patterns from data",
-                        "wrong_answers": ["Data Mining", "Statistical Analysis", "Computer Vision"],
-                        "progression_level": 1
-                    }
-                ];
+                console.error('Error loading selected deck:', error);
+                // Fallback to default data science deck
+                await loadDefaultDeck();
+            }
+        }
+        
+        async function loadDefaultDeck() {
+            try {
+                const response = await fetch('assets/data_science_cards.json');
+                const deckData = await response.json();
+                selectedDeck = {
+                    filename: 'data_science_cards.json',
+                    metadata: deckData.metadata,
+                    cards: deckData.cards
+                };
+                flashcards = deckData.cards;
+                currentProgressionLevel = 1;
+                initializeCardStates();
+                loadNewQuestion();
+            } catch (error) {
+                console.error('Error loading default deck:', error);
+                // Ultimate fallback
+                flashcards = [{
+                    "id": 1,
+                    "term": "Machine Learning",
+                    "definition": "A type of artificial intelligence where computers learn patterns from data",
+                    "wrong_answers": ["Data Mining", "Statistical Analysis", "Computer Vision"],
+                    "progression_level": 1
+                }];
+                initializeCardStates();
                 loadNewQuestion();
             }
+        }
+        
+        // Initialize card learning states
+        function initializeCardStates() {
+            cardStates.clear();
+            learnedCards.clear();
+            strugglingCards.clear();
+            
+            flashcards.forEach(card => {
+                cardStates.set(card.id, {
+                    state: 'new',
+                    consecutiveCorrect: 0
+                });
+            });
+        }
+
+        // Progressive Learning: Handle correct answer
+        function handleCorrectAnswer(card) {
+            if (!card || !cardStates.has(card.id)) return;
+            
+            const cardState = cardStates.get(card.id);
+            
+            if (cardState.state === 'new') {
+                // New card becomes learned immediately on correct answer
+                cardState.state = 'learned';
+                learnedCards.add(card.id);
+                console.log(`Card "${card.term}" learned!`);
+                
+                // Check if level is complete
+                checkLevelCompletion();
+                
+            } else if (cardState.state === 'struggling') {
+                // Struggling card needs 2 consecutive correct answers
+                cardState.consecutiveCorrect++;
+                console.log(`Card "${card.term}" progress: ${cardState.consecutiveCorrect}/2`);
+                
+                if (cardState.consecutiveCorrect >= 2) {
+                    cardState.state = 'learned';
+                    learnedCards.add(card.id);
+                    strugglingCards.delete(card.id);
+                    console.log(`Card "${card.term}" mastered after struggle!`);
+                    
+                    // Check if level is complete
+                    checkLevelCompletion();
+                }
+            }
+            
+            // Update card state
+            cardStates.set(card.id, cardState);
+        }
+        
+        // Progressive Learning: Handle wrong answer
+        function handleWrongAnswer(card) {
+            if (!card || !cardStates.has(card.id)) return;
+            
+            const cardState = cardStates.get(card.id);
+            
+            if (cardState.state === 'new') {
+                // New card becomes struggling on wrong answer
+                cardState.state = 'struggling';
+                cardState.consecutiveCorrect = 0;
+                strugglingCards.add(card.id);
+                console.log(`Card "${card.term}" is now struggling`);
+                
+            } else if (cardState.state === 'struggling') {
+                // Reset consecutive counter for struggling card
+                cardState.consecutiveCorrect = 0;
+                console.log(`Card "${card.term}" consecutive counter reset`);
+            }
+            
+            // Update card state
+            cardStates.set(card.id, cardState);
+            
+            // Lose a life for wrong answer
+            loseLife('wrong_answer');
+        }
+        
+        // Enhanced Lives System
+        function loseLife(reason) {
+            lives--;
+            console.log(`Lost life (${reason}): ${lives} remaining`);
+            
+            // Update lives display
+            updateLivesDisplay();
+            
+            if (lives <= 0) {
+                gameOver();
+            }
+        }
+        
+        function gainLife(reason) {
+            if (lives < maxLives) {
+                lives++;
+                console.log(`Gained life (${reason}): ${lives} total`);
+                updateLivesDisplay();
+            }
+        }
+        
+        function updateLivesDisplay() {
+            // Update lives in HUD (will implement UI later)
+            console.log(`Lives: ${lives}/${maxLives}`);
+        }
+        
+        // Check if current level is complete
+        function checkLevelCompletion() {
+            const currentLevelCards = flashcards.filter(card => 
+                card.progression_level === currentProgressionLevel
+            );
+            
+            const learnedInLevel = currentLevelCards.filter(card => 
+                learnedCards.has(card.id)
+            ).length;
+            
+            console.log(`Level ${currentProgressionLevel} progress: ${learnedInLevel}/${currentLevelCards.length}`);
+            
+            if (learnedInLevel === currentLevelCards.length) {
+                levelComplete();
+            }
+        }
+        
+        // Handle level completion
+        function levelComplete() {
+            console.log(`🎉 LEVEL ${currentProgressionLevel} COMPLETE! 🎉`);
+            
+            // Check if there are more levels
+            const nextLevel = currentProgressionLevel + 1;
+            const nextLevelCards = flashcards.filter(card => 
+                card.progression_level === nextLevel
+            );
+            
+            if (nextLevelCards.length > 0) {
+                currentProgressionLevel = nextLevel;
+                console.log(`Advancing to Level ${currentProgressionLevel}`);
+                
+                // Initialize new level cards
+                nextLevelCards.forEach(card => {
+                    if (!cardStates.has(card.id)) {
+                        cardStates.set(card.id, {
+                            state: 'new',
+                            consecutiveCorrect: 0
+                        });
+                    }
+                });
+                
+            } else {
+                // All levels complete - victory!
+                victoryComplete();
+            }
+        }
+        
+        // Handle game victory
+        function victoryComplete() {
+            console.log('🏆 VICTORY! All cards mastered! 🏆');
+            // Will implement victory screen later
+        }
+        
+        // Enhanced game over
+        function gameOver() {
+            console.log('💀 GAME OVER - No lives remaining 💀');
+            gameRunning = false;
+            gamePaused = false;
+            
+            // Stop game loops
+            if (projectileInterval) clearInterval(projectileInterval);
+            if (targetInterval) clearInterval(targetInterval);
+            
+            // Will implement game over screen later
         }
 
         function loadNewQuestion() {
             if (flashcards.length === 0) return;
             
-            // For now, just pick a random card from progression level 1
-            const level1Cards = flashcards.filter(card => card.progression_level === 1);
-            if (level1Cards.length === 0) return;
+            // Progressive Learning: Select cards based on current level and learning state
+            const availableCards = getAvailableCards();
             
-            currentQuestion = level1Cards[Math.floor(Math.random() * level1Cards.length)];
+            if (availableCards.length === 0) {
+                console.log('No available cards - checking level completion');
+                checkLevelCompletion();
+                return;
+            }
+            
+            // Select a random card from available cards
+            currentQuestion = availableCards[Math.floor(Math.random() * availableCards.length)];
             document.getElementById('questionText').textContent = currentQuestion.definition;
             
             // Update targets with answers
             updateTargetsWithAnswers();
             
-            console.log('New question:', currentQuestion.term);
+            console.log(`New question: ${currentQuestion.term} (Level ${currentQuestion.progression_level})`);
+            
+            // Show card state for debugging
+            if (cardStates.has(currentQuestion.id)) {
+                const state = cardStates.get(currentQuestion.id);
+                console.log(`Card state: ${state.state} (${state.consecutiveCorrect} consecutive)`);
+            }
+        }
+        
+        // Get available cards based on progression level and learning states
+        function getAvailableCards() {
+            // Get cards from current progression level
+            let availableCards = flashcards.filter(card => 
+                card.progression_level === currentProgressionLevel &&
+                !learnedCards.has(card.id) // Exclude learned cards
+            );
+            
+            // If no cards available at current level, check if we can advance
+            if (availableCards.length === 0) {
+                const nextLevel = currentProgressionLevel + 1;
+                const nextLevelCards = flashcards.filter(card => 
+                    card.progression_level === nextLevel
+                );
+                
+                if (nextLevelCards.length > 0) {
+                    // Advance to next level
+                    currentProgressionLevel = nextLevel;
+                    console.log(`Auto-advancing to Level ${currentProgressionLevel}`);
+                    
+                    // Initialize new level cards
+                    nextLevelCards.forEach(card => {
+                        if (!cardStates.has(card.id)) {
+                            cardStates.set(card.id, {
+                                state: 'new',
+                                consecutiveCorrect: 0
+                            });
+                        }
+                    });
+                    
+                    // Get cards from new level
+                    availableCards = nextLevelCards.filter(card => 
+                        !learnedCards.has(card.id)
+                    );
+                }
+            }
+            
+            return availableCards;
         }
 
         // Target spawning queue and timing
@@ -1074,6 +1405,9 @@
                         console.log('Correct answer!');
                         updateScore(100); // Award 100 points for correct answer
                         
+                        // Progressive Learning: Handle correct answer
+                        handleCorrectAnswer(currentQuestion);
+                        
                         // Remove target immediately - no freeze
                         if (target.element && target.element.parentNode) {
                             target.element.remove();
@@ -1086,6 +1420,9 @@
                         loadNewQuestion(); // Load new question on correct answer
                     } else {
                         console.log('Wrong answer!');
+                        
+                        // Progressive Learning: Handle wrong answer
+                        handleWrongAnswer(currentQuestion);
                         
                         // Remove target immediately - no freeze
                         if (target.element && target.element.parentNode) {
@@ -1127,6 +1464,12 @@
                     // Target should disappear when its BOTTOM reaches the bottom of the game board
                     // tgt.y is the TOP of the target, so bottom = tgt.y + targetHeight
                     if (tgt.y + targetHeight >= boardHeight) { // Remove when target bottom reaches board bottom
+                        // Check if this was a correct answer that was missed
+                        if (tgt.isCorrect) {
+                            console.log('Missed correct answer - losing life');
+                            loseLife('missed_correct');
+                        }
+                        
                         tgt.element.remove();
                         targets.splice(index, 1);
                         console.log('Target removed - bottom reached bottom of game board');

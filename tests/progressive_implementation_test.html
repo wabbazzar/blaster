@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    
+    <!-- Mobile-first PWA headers -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Progressive Test">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Cache-busting headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>Progressive Gameplay Implementation Test</title>
+    
+    <style>
+        /* Mobile-first CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background: #000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            margin: 0;
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .pending { color: #ffff00; }
+        .info { color: #00ffff; }
+        
+        button {
+            background: #003366;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Progressive Gameplay Implementation Test</h1>
+    
+    <div class="test-section">
+        <h2>Phase 0: Foundation Infrastructure</h2>
+        <div id="phase0Results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Phase 1: Card Learning States</h2>
+        <div id="phase1Results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Phase 2: Multi-Deck System</h2>
+        <div id="phase2Results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Phase 3: Enhanced Scoring</h2>
+        <div id="phase3Results"></div>
+    </div>
+    
+    <button onclick="runFullTest()">Run Full Test</button>
+    <button onclick="clearResults()">Clear Results</button>
+
+    <script>
+        function addResult(phaseId, status, message) {
+            const container = document.getElementById(phaseId);
+            const div = document.createElement('div');
+            div.className = status;
+            div.textContent = `${status.toUpperCase()}: ${message}`;
+            container.appendChild(div);
+        }
+        
+        function clearResults() {
+            ['phase0Results', 'phase1Results', 'phase2Results', 'phase3Results']
+                .forEach(id => document.getElementById(id).innerHTML = '');
+        }
+        
+        async function testDeckDiscovery() {
+            addResult('phase2Results', 'info', 'Testing deck auto-discovery...');
+            
+            try {
+                const dsResponse = await fetch('../assets/data_science_cards.json');
+                if (dsResponse.ok) {
+                    const dsData = await dsResponse.json();
+                    if (dsData.metadata) {
+                        addResult('phase2Results', 'pass', `Data Science deck found with metadata`);
+                    } else {
+                        addResult('phase2Results', 'fail', 'Data Science deck missing metadata');
+                    }
+                } else {
+                    addResult('phase2Results', 'fail', 'Data Science deck not found');
+                }
+            } catch (error) {
+                addResult('phase2Results', 'fail', `Deck discovery error: ${error.message}`);
+            }
+        }
+        
+        function testFoundation() {
+            addResult('phase0Results', 'info', 'Testing foundation infrastructure...');
+            
+            if ('serviceWorker' in navigator) {
+                addResult('phase0Results', 'pass', 'Service Worker support available');
+            } else {
+                addResult('phase0Results', 'fail', 'Service Worker not supported');
+            }
+            
+            addResult('phase0Results', 'pending', 'PWA manifest not implemented');
+            addResult('phase0Results', 'pending', 'Deck auto-discovery not implemented');
+        }
+        
+        function testCardStates() {
+            addResult('phase1Results', 'info', 'Testing card learning states...');
+            addResult('phase1Results', 'pending', 'Card state machine not implemented');
+            addResult('phase1Results', 'pending', 'Consecutive counter not implemented');
+            addResult('phase1Results', 'pending', 'State persistence not implemented');
+        }
+        
+        function testScoring() {
+            addResult('phase3Results', 'info', 'Testing enhanced scoring...');
+            addResult('phase3Results', 'pending', 'Life gain per 1000 points not implemented');
+            addResult('phase3Results', 'pending', 'Enhanced HUD not implemented');
+        }
+        
+        async function runFullTest() {
+            clearResults();
+            testFoundation();
+            await testDeckDiscovery();
+            testCardStates();
+            testScoring();
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(runFullTest, 500);
+        });
+    </script>
+</body>
+</html> 

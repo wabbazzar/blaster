@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    
+    <!-- Mobile-first PWA headers -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Lives System">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Cache-busting headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>Mobile Enhanced Lives & Scoring System</title>
+    
+    <style>
+        /* Mobile-first CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background: #000000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: manipulation;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .mobile-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            padding: 10px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            gap: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Mobile Header */
+        .mobile-header {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .mobile-title {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .mobile-subtitle {
+            color: #ff6600;
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            opacity: 0.9;
+        }
+        
+        /* Lives & Scoring Display */
+        .game-hud {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+        }
+        
+        /* Lives Display */
+        .lives-display {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .lives-title {
+            color: #ff0000;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #ff0000;
+        }
+        
+        .hearts-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            min-height: 60px;
+            flex-wrap: wrap;
+        }
+        
+        .heart {
+            font-size: clamp(2rem, 8vw, 3rem);
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .heart.full {
+            color: #ff0000;
+            text-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
+            animation: heartbeat 2s ease-in-out infinite;
+        }
+        
+        .heart.empty {
+            color: #330000;
+            text-shadow: none;
+        }
+        
+        .heart.gained {
+            animation: heartGained 0.8s ease-out;
+        }
+        
+        .heart.lost {
+            animation: heartLost 0.8s ease-out;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes heartGained {
+            0% { 
+                transform: scale(0.5); 
+                opacity: 0; 
+                color: #00ff00;
+            }
+            50% { 
+                transform: scale(1.3); 
+                opacity: 1; 
+                color: #00ff00;
+            }
+            100% { 
+                transform: scale(1); 
+                opacity: 1; 
+                color: #ff0000;
+            }
+        }
+        
+        @keyframes heartLost {
+            0% { 
+                transform: scale(1); 
+                opacity: 1; 
+                color: #ff0000;
+            }
+            25% { 
+                transform: scale(1.2) rotate(-10deg); 
+                opacity: 0.8; 
+            }
+            50% { 
+                transform: scale(0.8) rotate(10deg); 
+                opacity: 0.5; 
+            }
+            100% { 
+                transform: scale(1); 
+                opacity: 1; 
+                color: #330000;
+            }
+        }
+        
+        .lives-counter {
+            color: #ffffff;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+        }
+        
+        /* Score Display */
+        .score-display {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .score-title {
+            color: #00ff00;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .score-value {
+            color: #ffffff;
+            font-size: clamp(2rem, 8vw, 3rem);
+            font-weight: bold;
+            text-shadow: 0 0 15px #00ff00;
+            margin-bottom: 10px;
+        }
+        
+        .score-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffff00;
+            font-size: clamp(1.5rem, 6vw, 2rem);
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffff00;
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        .score-animation.show {
+            animation: scoreGained 1s ease-out;
+        }
+        
+        @keyframes scoreGained {
+            0% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.5); 
+            }
+            30% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1.2); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(-50%, -80%) scale(1); 
+            }
+        }
+        
+        /* Game Stats */
+        .game-stats {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+        
+        .stats-title {
+            color: #ffff00;
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        
+        /* Action Controls */
+        .action-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .control-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-button {
+            flex: 1;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.1));
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-button:active {
+            transform: scale(0.95);
+        }
+        
+        .control-button.correct {
+            background: linear-gradient(45deg, rgba(0, 255, 0, 0.3), rgba(0, 255, 0, 0.1));
+            border-color: #00ff00;
+            color: #00ff00;
+            text-shadow: 0 0 8px #00ff00;
+        }
+        
+        .control-button.wrong {
+            background: linear-gradient(45deg, rgba(255, 0, 0, 0.3), rgba(255, 0, 0, 0.1));
+            border-color: #ff0000;
+            color: #ff0000;
+            text-shadow: 0 0 8px #ff0000;
+        }
+        
+        .control-button.life-gain {
+            background: linear-gradient(45deg, rgba(255, 0, 153, 0.3), rgba(255, 0, 153, 0.1));
+            border-color: #ff0099;
+            color: #ff0099;
+            text-shadow: 0 0 8px #ff0099;
+        }
+        
+        .control-button.reset {
+            background: linear-gradient(45deg, rgba(255, 255, 0, 0.3), rgba(255, 255, 0, 0.1));
+            border-color: #ffff00;
+            color: #ffff00;
+            text-shadow: 0 0 8px #ffff00;
+        }
+        
+        /* Game Over Overlay */
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .game-over-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .game-over-title {
+            color: #ff0000;
+            font-size: clamp(2.5rem, 10vw, 4rem);
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+            margin-bottom: 20px;
+            animation: gameOverPulse 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes gameOverPulse {
+            0% { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000; }
+            100% { text-shadow: 0 0 30px #ff0000, 0 0 50px #ff0000, 0 0 70px #ff0000; }
+        }
+        
+        .game-over-stats {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff0000;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .final-score {
+            color: #00ff00;
+            font-size: clamp(1.5rem, 6vw, 2rem);
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 10px;
+        }
+        
+        .play-again-button {
+            background: linear-gradient(45deg, #00ff00, #00ffff);
+            border: none;
+            border-radius: 12px;
+            padding: 20px 40px;
+            color: #000000;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .play-again-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Test Results */
+        .test-results {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+        
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+        }
+        
+        .test-status {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .pass { background: #00ff00; }
+        .fail { background: #ff0000; }
+        .pending { background: #ffff00; }
+        
+        /* Desktop Enhancement */
+        @media (min-width: 768px) {
+            .mobile-container {
+                flex-direction: row;
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .game-hud {
+                flex: 2;
+                min-width: 500px;
+            }
+            
+            .desktop-sidebar {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                min-width: 300px;
+            }
+            
+            .mobile-header {
+                display: none;
+            }
+            
+            .desktop-header {
+                display: block;
+                background: rgba(0, 255, 255, 0.1);
+                border: 1px solid rgba(0, 255, 255, 0.3);
+                border-radius: 10px;
+                padding: 20px;
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        
+        .desktop-header {
+            display: none;
+        }
+        
+        .desktop-sidebar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="mobile-title">Enhanced Lives & Scoring</div>
+            <div class="mobile-subtitle">Mobile-First Game System</div>
+        </div>
+        
+        <!-- Desktop Header (hidden on mobile) -->
+        <div class="desktop-header">
+            <div class="desktop-title">Enhanced Lives & Scoring</div>
+            <div class="desktop-subtitle">Mobile-First Game System</div>
+        </div>
+        
+        <!-- Main Game HUD -->
+        <div class="game-hud">
+            <!-- Lives Display -->
+            <div class="lives-display">
+                <div class="lives-title">Lives Remaining</div>
+                <div class="hearts-container" id="heartsContainer">
+                    <!-- Hearts will be generated here -->
+                </div>
+                <div class="lives-counter">
+                    <span id="livesCount">5</span> / <span id="maxLives">10</span>
+                </div>
+            </div>
+            
+            <!-- Score Display -->
+            <div class="score-display">
+                <div class="score-title">Current Score</div>
+                <div class="score-value" id="scoreValue">0</div>
+                <div class="score-animation" id="scoreAnimation">+100</div>
+            </div>
+            
+            <!-- Game Statistics -->
+            <div class="game-stats">
+                <div class="stats-title">Game Statistics</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Correct</div>
+                        <div class="stat-value" id="correctCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Wrong</div>
+                        <div class="stat-value" id="wrongCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Lives Lost</div>
+                        <div class="stat-value" id="livesLostCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Lives Gained</div>
+                        <div class="stat-value" id="livesGainedCount">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Controls -->
+            <div class="action-controls">
+                <div class="control-row">
+                    <button class="control-button correct" id="correctButton">
+                        ✅ Correct Answer
+                    </button>
+                    <button class="control-button wrong" id="wrongButton">
+                        ❌ Wrong Answer
+                    </button>
+                </div>
+                <div class="control-row">
+                    <button class="control-button life-gain" id="lifeGainButton">
+                        💖 Gain Life
+                    </button>
+                    <button class="control-button reset" id="resetButton">
+                        🔄 Reset Game
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Desktop Sidebar (hidden on mobile) -->
+        <div class="desktop-sidebar">
+            <!-- Test Results Panel -->
+            <div class="test-results">
+                <div class="results-title">System Tests</div>
+                
+                <div class="test-item">
+                    <div class="test-status pass" id="lives-display-status"></div>
+                    <span id="lives-display-result">Lives Display: ACTIVE</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pass" id="scoring-system-status"></div>
+                    <span id="scoring-system-result">Scoring System: ACTIVE</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pending" id="life-loss-status"></div>
+                    <span id="life-loss-result">Life Loss: Waiting</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pending" id="life-gain-status"></div>
+                    <span id="life-gain-result">Life Gain: Waiting</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pending" id="game-over-status"></div>
+                    <span id="game-over-result">Game Over: Waiting</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Results Panel (Mobile) -->
+        <div class="test-results">
+            <div class="results-title">Test Progress</div>
+            <div class="test-summary" id="testSummary">
+                📊 Lives System Tests: 2/5 passed (40%)
+            </div>
+        </div>
+    </div>
+    
+    <!-- Game Over Overlay -->
+    <div class="game-over-overlay" id="gameOverOverlay">
+        <div class="game-over-title">Game Over</div>
+        <div class="game-over-stats">
+            <div class="final-score" id="finalScore">Final Score: 0</div>
+        </div>
+        <button class="play-again-button" id="playAgainButton">Play Again</button>
+    </div>
+
+    <script>
+        // Mobile-First Enhanced Lives & Scoring System
+        class LivesSystemTest {
+            constructor() {
+                this.testResults = {
+                    livesDisplay: true,
+                    scoringSystem: true,
+                    lifeLoss: false,
+                    lifeGain: false,
+                    gameOver: false
+                };
+                
+                // Game state
+                this.currentLives = 5;
+                this.maxLives = 10;
+                this.currentScore = 0;
+                this.stats = {
+                    correct: 0,
+                    wrong: 0,
+                    livesLost: 0,
+                    livesGained: 0
+                };
+                
+                // Mobile detection
+                this.isMobile = window.innerWidth < 768 || ('ontouchstart' in window);
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('🚀 Starting Mobile Lives & Scoring System Tests');
+                console.log('📱 Mobile mode:', this.isMobile);
+                
+                // Setup controls
+                this.setupControls();
+                
+                // Setup haptic feedback
+                this.setupHapticFeedback();
+                
+                // Initialize displays
+                this.initializeLivesDisplay();
+                this.updateScoreDisplay();
+                this.updateStatsDisplay();
+                this.updateTestResults();
+                
+                console.log('💖 Lives & scoring system initialized');
+            }
+            
+            setupControls() {
+                const correctButton = document.getElementById('correctButton');
+                const wrongButton = document.getElementById('wrongButton');
+                const lifeGainButton = document.getElementById('lifeGainButton');
+                const resetButton = document.getElementById('resetButton');
+                const playAgainButton = document.getElementById('playAgainButton');
+                
+                // Touch event handlers (mobile-first)
+                correctButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.handleCorrectAnswer();
+                });
+                
+                wrongButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.handleWrongAnswer();
+                });
+                
+                lifeGainButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.handleLifeGain();
+                });
+                
+                resetButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.resetGame();
+                });
+                
+                playAgainButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.playAgain();
+                });
+                
+                // Click event handlers (desktop enhancement)
+                correctButton.addEventListener('click', () => {
+                    this.handleCorrectAnswer();
+                });
+                
+                wrongButton.addEventListener('click', () => {
+                    this.handleWrongAnswer();
+                });
+                
+                lifeGainButton.addEventListener('click', () => {
+                    this.handleLifeGain();
+                });
+                
+                resetButton.addEventListener('click', () => {
+                    this.resetGame();
+                });
+                
+                playAgainButton.addEventListener('click', () => {
+                    this.playAgain();
+                });
+                
+                // Prevent double-firing on mobile
+                [correctButton, wrongButton, lifeGainButton, resetButton, playAgainButton].forEach(button => {
+                    button.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                    });
+                });
+                
+                console.log('🎮 Mobile touch controls setup complete');
+            }
+            
+            setupHapticFeedback() {
+                this.hasHaptic = 'vibrate' in navigator;
+                if (this.hasHaptic) {
+                    console.log('📳 Haptic feedback available');
+                }
+            }
+            
+            triggerHaptic(pattern) {
+                if (this.hasHaptic) {
+                    navigator.vibrate(pattern);
+                }
+            }
+            
+            // Lives Display System
+            initializeLivesDisplay() {
+                this.updateLivesDisplay();
+                console.log('💖 Lives display initialized');
+            }
+            
+            updateLivesDisplay() {
+                const heartsContainer = document.getElementById('heartsContainer');
+                const livesCount = document.getElementById('livesCount');
+                const maxLives = document.getElementById('maxLives');
+                
+                // Clear existing hearts
+                heartsContainer.innerHTML = '';
+                
+                // Create hearts up to max lives
+                for (let i = 0; i < this.maxLives; i++) {
+                    const heart = document.createElement('span');
+                    heart.className = 'heart';
+                    heart.textContent = '♥';
+                    heart.id = `heart-${i}`;
+                    
+                    if (i < this.currentLives) {
+                        heart.classList.add('full');
+                    } else {
+                        heart.classList.add('empty');
+                    }
+                    
+                    heartsContainer.appendChild(heart);
+                }
+                
+                // Update counters
+                livesCount.textContent = this.currentLives;
+                maxLives.textContent = this.maxLives;
+            }
+            
+            loseLife() {
+                if (this.currentLives <= 0) return;
+                
+                // Haptic feedback for life loss
+                this.triggerHaptic([200, 100, 200]);
+                
+                // Update life count
+                this.currentLives--;
+                this.stats.livesLost++;
+                
+                // Animate heart loss
+                const heartToLose = document.getElementById(`heart-${this.currentLives}`);
+                if (heartToLose) {
+                    heartToLose.classList.remove('full');
+                    heartToLose.classList.add('lost');
+                    
+                    setTimeout(() => {
+                        heartToLose.classList.remove('lost');
+                        heartToLose.classList.add('empty');
+                    }, 800);
+                }
+                
+                // Update displays
+                document.getElementById('livesCount').textContent = this.currentLives;
+                this.updateStatsDisplay();
+                
+                // Mark life loss test as passed
+                this.testResults.lifeLoss = true;
+                this.updateStatus('life-loss-status', true);
+                if (document.getElementById('life-loss-result')) {
+                    document.getElementById('life-loss-result').textContent = 
+                        'Life Loss: WORKING';
+                }
+                
+                // Check for game over
+                if (this.currentLives <= 0) {
+                    this.triggerGameOver();
+                }
+                
+                this.updateTestResults();
+                console.log(`💔 Life lost! Lives remaining: ${this.currentLives}`);
+            }
+            
+            gainLife() {
+                if (this.currentLives >= this.maxLives) return;
+                
+                // Haptic feedback for life gain
+                this.triggerHaptic([100, 50, 100, 50, 100]);
+                
+                // Animate heart gain
+                const heartToGain = document.getElementById(`heart-${this.currentLives}`);
+                if (heartToGain) {
+                    heartToGain.classList.remove('empty');
+                    heartToGain.classList.add('gained');
+                    
+                    setTimeout(() => {
+                        heartToGain.classList.remove('gained');
+                        heartToGain.classList.add('full');
+                    }, 800);
+                }
+                
+                // Update life count
+                this.currentLives++;
+                this.stats.livesGained++;
+                
+                // Update displays
+                document.getElementById('livesCount').textContent = this.currentLives;
+                this.updateStatsDisplay();
+                
+                // Mark life gain test as passed
+                this.testResults.lifeGain = true;
+                this.updateStatus('life-gain-status', true);
+                if (document.getElementById('life-gain-result')) {
+                    document.getElementById('life-gain-result').textContent = 
+                        'Life Gain: WORKING';
+                }
+                
+                this.updateTestResults();
+                console.log(`💚 Life gained! Lives remaining: ${this.currentLives}`);
+            }
+            
+            // Scoring System
+            updateScoreDisplay() {
+                document.getElementById('scoreValue').textContent = this.currentScore;
+            }
+            
+            addScore(points) {
+                // Haptic feedback for score gain
+                this.triggerHaptic([50]);
+                
+                // Update score
+                this.currentScore += points;
+                this.updateScoreDisplay();
+                
+                // Show score animation
+                const scoreAnimation = document.getElementById('scoreAnimation');
+                scoreAnimation.textContent = `+${points}`;
+                scoreAnimation.classList.remove('show');
+                
+                setTimeout(() => {
+                    scoreAnimation.classList.add('show');
+                }, 10);
+                
+                // Check for life gain (every 1000 points)
+                if (this.currentScore > 0 && this.currentScore % 1000 === 0) {
+                    this.gainLife();
+                }
+                
+                console.log(`💰 Score increased by ${points}! Total: ${this.currentScore}`);
+            }
+            
+            // Game Actions
+            handleCorrectAnswer() {
+                // Add score for correct answer
+                this.addScore(100);
+                this.stats.correct++;
+                this.updateStatsDisplay();
+                
+                console.log('✅ Correct answer processed');
+            }
+            
+            handleWrongAnswer() {
+                // Lose life for wrong answer
+                this.loseLife();
+                this.stats.wrong++;
+                this.updateStatsDisplay();
+                
+                console.log('❌ Wrong answer processed');
+            }
+            
+            handleLifeGain() {
+                // Manual life gain for testing
+                this.gainLife();
+                
+                console.log('💖 Manual life gain triggered');
+            }
+            
+            updateStatsDisplay() {
+                document.getElementById('correctCount').textContent = this.stats.correct;
+                document.getElementById('wrongCount').textContent = this.stats.wrong;
+                document.getElementById('livesLostCount').textContent = this.stats.livesLost;
+                document.getElementById('livesGainedCount').textContent = this.stats.livesGained;
+            }
+            
+            // Game Over System
+            triggerGameOver() {
+                // Haptic feedback for game over
+                this.triggerHaptic([300, 200, 300, 200, 300]);
+                
+                // Show game over overlay
+                const overlay = document.getElementById('gameOverOverlay');
+                const finalScore = document.getElementById('finalScore');
+                
+                finalScore.textContent = `Final Score: ${this.currentScore}`;
+                overlay.classList.add('show');
+                
+                // Mark game over test as passed
+                this.testResults.gameOver = true;
+                this.updateStatus('game-over-status', true);
+                if (document.getElementById('game-over-result')) {
+                    document.getElementById('game-over-result').textContent = 
+                        'Game Over: TRIGGERED';
+                }
+                
+                this.updateTestResults();
+                console.log('💀 Game Over triggered');
+            }
+            
+            playAgain() {
+                // Hide game over overlay
+                document.getElementById('gameOverOverlay').classList.remove('show');
+                
+                // Reset game
+                this.resetGame();
+                
+                console.log('🔄 Play again initiated');
+            }
+            
+            resetGame() {
+                // Haptic feedback for reset
+                this.triggerHaptic([100, 50, 100]);
+                
+                // Reset game state
+                this.currentLives = 5;
+                this.currentScore = 0;
+                this.stats = {
+                    correct: 0,
+                    wrong: 0,
+                    livesLost: 0,
+                    livesGained: 0
+                };
+                
+                // Update displays
+                this.updateLivesDisplay();
+                this.updateScoreDisplay();
+                this.updateStatsDisplay();
+                
+                // Hide game over overlay
+                document.getElementById('gameOverOverlay').classList.remove('show');
+                
+                console.log('🔄 Game reset complete');
+            }
+            
+            updateStatus(elementId, passed) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.className = `test-status ${passed ? 'pass' : 'fail'}`;
+                }
+            }
+            
+            updateTestResults() {
+                const passedTests = Object.values(this.testResults).filter(result => result).length;
+                const totalTests = Object.keys(this.testResults).length;
+                const percentage = Math.round((passedTests / totalTests) * 100);
+                
+                const summary = document.getElementById('testSummary');
+                if (summary) {
+                    summary.textContent = `📊 Lives System Tests: ${passedTests}/${totalTests} passed (${percentage}%)`;
+                }
+                
+                console.log(`📊 Test Results: ${passedTests}/${totalTests} passed (${percentage}%)`);
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', function() {
+            console.log('🌟 Mobile Lives & Scoring System Test loading...');
+            
+            // Initialize the lives system test
+            window.livesSystemTest = new LivesSystemTest();
+            
+            console.log('✅ Mobile Lives & Scoring System Test ready');
+        });
+        
+        // Handle orientation changes for mobile
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                console.log('📱 Orientation changed, updating layout');
+            }, 200);
+        });
+        
+        window.addEventListener('resize', function() {
+            console.log('🔄 Window resized, checking mobile state');
+        });
+    </script>
+</body>
+</html> 

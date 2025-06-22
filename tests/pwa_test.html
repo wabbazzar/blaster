@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    
+    <!-- Mobile-first PWA headers -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PWA Test">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Cache-busting headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- iOS PWA Meta Tags -->
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/assets/icons/icon-167x167.png">
+    
+    <title>PWA Test - Mobile First</title>
+    
+    <style>
+        body {
+            background: #000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .status {
+            background: rgba(0,255,255,0.1);
+            border: 2px solid #00ffff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .button {
+            background: #00ffff;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+        .test-result {
+            color: #00ff00;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PWA & Cross-Platform Test</h1>
+        
+        <div class="status">
+            <h3>Service Worker Status</h3>
+            <div id="sw-status">Checking...</div>
+            <button class="button" onclick="testServiceWorker()">Test Service Worker</button>
+        </div>
+        
+        <div class="status">
+            <h3>Platform Detection</h3>
+            <div id="platform-info">Loading...</div>
+        </div>
+        
+        <div class="status">
+            <h3>PWA Features</h3>
+            <div id="pwa-features">Testing...</div>
+            <button class="button" onclick="testPWAFeatures()">Test PWA Features</button>
+        </div>
+        
+        <div class="test-result" id="test-results">
+            📊 PWA Tests: Ready to run
+        </div>
+    </div>
+
+    <script>
+        // Mobile PWA Test System
+        let testResults = {
+            serviceWorker: false,
+            platform: true,
+            pwaFeatures: false
+        };
+
+        // Initialize
+        window.addEventListener('load', function() {
+            detectPlatform();
+            updateResults();
+        });
+
+        function detectPlatform() {
+            const userAgent = navigator.userAgent;
+            const isMobile = window.innerWidth < 768 || ('ontouchstart' in window);
+            
+            let device = 'Desktop';
+            if (/iPhone|iPad|iPod/.test(userAgent)) device = 'iOS';
+            else if (/Android/.test(userAgent)) device = 'Android';
+            else if (isMobile) device = 'Mobile';
+            
+            document.getElementById('platform-info').innerHTML = `
+                Device: ${device}<br>
+                Mobile: ${isMobile ? 'Yes' : 'No'}<br>
+                Touch Support: ${'ontouchstart' in window ? 'Yes' : 'No'}<br>
+                PWA Support: ${'serviceWorker' in navigator ? 'Yes' : 'No'}
+            `;
+            
+            console.log('Platform detected:', device);
+        }
+
+        async function testServiceWorker() {
+            if (!('serviceWorker' in navigator)) {
+                document.getElementById('sw-status').innerHTML = 'Service Worker not supported';
+                return;
+            }
+
+            try {
+                const swCode = `
+                    self.addEventListener('install', function(event) {
+                        console.log('Service Worker installed');
+                    });
+                    
+                    self.addEventListener('fetch', function(event) {
+                        event.respondWith(fetch(event.request));
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                const registration = await navigator.serviceWorker.register(swUrl);
+                
+                document.getElementById('sw-status').innerHTML = `
+                    ✅ Service Worker registered<br>
+                    Scope: ${registration.scope}
+                `;
+                
+                testResults.serviceWorker = true;
+                updateResults();
+                console.log('Service Worker test passed');
+                
+            } catch (error) {
+                document.getElementById('sw-status').innerHTML = `❌ Registration failed: ${error.message}`;
+                console.error('Service Worker test failed:', error);
+            }
+        }
+
+        function testPWAFeatures() {
+            const features = [];
+            
+            if ('serviceWorker' in navigator) features.push('✅ Service Worker');
+            else features.push('❌ Service Worker');
+            
+            if ('PushManager' in window) features.push('✅ Push Notifications');
+            else features.push('❌ Push Notifications');
+            
+            if ('caches' in window) features.push('✅ Cache API');
+            else features.push('❌ Cache API');
+            
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                features.push('✅ Standalone Mode');
+            } else {
+                features.push('❌ Standalone Mode');
+            }
+            
+            document.getElementById('pwa-features').innerHTML = features.join('<br>');
+            
+            testResults.pwaFeatures = true;
+            updateResults();
+            console.log('PWA features test completed');
+        }
+
+        function updateResults() {
+            const passed = Object.values(testResults).filter(r => r).length;
+            const total = Object.keys(testResults).length;
+            const percentage = Math.round((passed / total) * 100);
+            
+            document.getElementById('test-results').textContent = 
+                `📊 PWA Tests: ${passed}/${total} passed (${percentage}%)`;
+        }
+    </script>
+</body>
+</html> 

@@ -379,7 +379,8 @@
     </div>
 
     <script>
-        // Deck Discovery Test Suite
+        // Force reload timestamp: 1750616500000
+        // Deck Discovery Test System for Card Blaster Progressive
         class DeckDiscoveryTest {
             constructor() {
                 this.testResults = {
@@ -430,7 +431,9 @@
                     // Load each deck and validate metadata
                     for (const filename of deckFiles) {
                         try {
-                            const response = await fetch(`assets/${filename}`);
+                            // Add cache-busting to avoid service worker issues
+                            const cacheBuster = new Date().getTime();
+                            const response = await fetch(`/assets/${filename}?v=${cacheBuster}`);
                             if (response.ok) {
                                 const deckData = await response.json();
                                 
@@ -439,6 +442,8 @@
                                 if (validatedDeck) {
                                     this.discoveredDecks.push(validatedDeck);
                                 }
+                            } else {
+                                console.warn(`Failed to load ${filename}: ${response.status} ${response.statusText}`);
                             }
                         } catch (error) {
                             console.warn(`Failed to load ${filename}:`, error);
@@ -725,10 +730,11 @@ ${formatJson(this.selectedDeck.rawData)}
             // Test Error Handling
             testErrorHandling() {
                 // Simulate various error conditions
+                const cacheBuster = new Date().getTime();
                 const errorTests = [
                     {
                         name: 'Missing file',
-                        test: () => fetch('assets/nonexistent_cards.json'),
+                        test: () => fetch(`/assets/nonexistent_cards.json?v=${cacheBuster}`),
                         expectedError: true
                     },
                     {

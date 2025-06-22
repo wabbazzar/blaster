@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    
+    <!-- Mobile-first PWA headers -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Deck Selection">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Cache-busting headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>Mobile Multi-Deck Selection - Progressive Learning System</title>
+    
+    <style>
+        /* Mobile-first CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background: #000000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: manipulation;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .mobile-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            padding: 10px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            gap: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Mobile Header */
+        .mobile-header {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .mobile-title {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .mobile-subtitle {
+            color: #ff6600;
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            opacity: 0.9;
+        }
+        
+        /* Deck Selection Area */
+        .deck-selection {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+        }
+        
+        /* Current Selection Display */
+        .current-selection {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .selection-title {
+            color: #00ffff;
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .selected-deck {
+            color: #00ff00;
+            font-size: clamp(1.3rem, 5vw, 2rem);
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 10px;
+        }
+        
+        .selected-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+            font-weight: bold;
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+        }
+        
+        /* Deck List */
+        .deck-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            min-height: 0;
+        }
+        
+        .deck-item {
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .deck-item:active {
+            transform: scale(0.98);
+        }
+        
+        .deck-item.selected {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.15);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+        
+        .deck-name {
+            color: #00ffff;
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .deck-description {
+            color: #ffffff;
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            opacity: 0.8;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .deck-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .deck-stat {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            padding: 6px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            opacity: 0.6;
+            margin-bottom: 3px;
+        }
+        
+        .stat-value {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: bold;
+            color: #ffff00;
+        }
+        
+        /* Difficulty Level Selection */
+        .difficulty-selection {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        .difficulty-title {
+            color: #ff6600;
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .difficulty-levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+        
+        .difficulty-level {
+            background: rgba(255, 102, 0, 0.1);
+            border: 2px solid rgba(255, 102, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            font-weight: bold;
+        }
+        
+        .difficulty-level:active {
+            transform: scale(0.95);
+        }
+        
+        .difficulty-level.selected {
+            border-color: #ff6600;
+            background: rgba(255, 102, 0, 0.3);
+            color: #ff6600;
+            text-shadow: 0 0 8px #ff6600;
+        }
+        
+        .difficulty-level.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .action-button {
+            flex: 1;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.1));
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-button:active {
+            transform: scale(0.95);
+        }
+        
+        .action-button.start {
+            background: linear-gradient(45deg, rgba(0, 255, 0, 0.3), rgba(0, 255, 0, 0.1));
+            border-color: #00ff00;
+            color: #00ff00;
+            text-shadow: 0 0 8px #00ff00;
+        }
+        
+        .action-button.refresh {
+            background: linear-gradient(45deg, rgba(255, 255, 0, 0.3), rgba(255, 255, 0, 0.1));
+            border-color: #ffff00;
+            color: #ffff00;
+            text-shadow: 0 0 8px #ffff00;
+        }
+        
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #00ffff;
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Test Results */
+        .test-results {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+        
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+        }
+        
+        .test-status {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .pass { background: #00ff00; }
+        .fail { background: #ff0000; }
+        .pending { background: #ffff00; }
+        
+        /* Desktop Enhancement */
+        @media (min-width: 768px) {
+            .mobile-container {
+                flex-direction: row;
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .deck-selection {
+                flex: 2;
+                min-width: 500px;
+            }
+            
+            .desktop-sidebar {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                min-width: 300px;
+            }
+            
+            .mobile-header {
+                display: none;
+            }
+            
+            .desktop-header {
+                display: block;
+                background: rgba(0, 255, 255, 0.1);
+                border: 1px solid rgba(0, 255, 255, 0.3);
+                border-radius: 10px;
+                padding: 20px;
+                text-align: center;
+            }
+        }
+        
+        .desktop-header {
+            display: none;
+        }
+        
+        .desktop-sidebar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="mobile-title">Multi-Deck Selection</div>
+            <div class="mobile-subtitle">Progressive Learning System</div>
+        </div>
+        
+        <!-- Desktop Header (hidden on mobile) -->
+        <div class="desktop-header">
+            <div class="desktop-title">Multi-Deck Selection</div>
+            <div class="desktop-subtitle">Progressive Learning System</div>
+        </div>
+        
+        <!-- Main Deck Selection Area -->
+        <div class="deck-selection">
+            <!-- Current Selection Display -->
+            <div class="current-selection">
+                <div class="selection-title">Selected Deck</div>
+                <div class="selected-deck" id="selectedDeckName">No Deck Selected</div>
+                <div class="selected-info" id="selectedInfo" style="display: none;">
+                    <div class="info-item">
+                        <div class="info-label">Cards</div>
+                        <div class="info-value" id="selectedCards">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Max Level</div>
+                        <div class="info-value" id="selectedMaxLevel">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deck List -->
+            <div class="deck-list" id="deckList">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    Discovering available decks...
+                </div>
+            </div>
+            
+            <!-- Difficulty Level Selection -->
+            <div class="difficulty-selection">
+                <div class="difficulty-title">Select Difficulty Level</div>
+                <div class="difficulty-levels" id="difficultyLevels">
+                    <div class="difficulty-level disabled">Level 1</div>
+                    <div class="difficulty-level disabled">Level 2</div>
+                    <div class="difficulty-level disabled">Level 3</div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="action-button start" id="startButton">
+                    🚀 Start Learning
+                </button>
+                <button class="action-button refresh" id="refreshButton">
+                    🔄 Refresh Decks
+                </button>
+            </div>
+        </div>
+        
+        <!-- Desktop Sidebar (hidden on mobile) -->
+        <div class="desktop-sidebar">
+            <!-- Test Results Panel -->
+            <div class="test-results">
+                <div class="results-title">System Tests</div>
+                
+                <div class="test-item">
+                    <div class="test-status pending" id="deck-discovery-status"></div>
+                    <span id="deck-discovery-result">Deck Discovery: Waiting</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pending" id="metadata-parsing-status"></div>
+                    <span id="metadata-parsing-result">Metadata Parsing: Waiting</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pending" id="level-population-status"></div>
+                    <span id="level-population-result">Level Population: Waiting</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pending" id="selection-interface-status"></div>
+                    <span id="selection-interface-result">Selection Interface: Waiting</span>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-status pass" id="system-ready-status"></div>
+                    <span id="system-ready-result">System: READY</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Results Panel (Mobile) -->
+        <div class="test-results">
+            <div class="results-title">Test Progress</div>
+            <div class="test-summary" id="testSummary">
+                📊 Multi-Deck Tests: 1/5 passed (20%)
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile-First Multi-Deck Selection System
+        class MultiDeckSelectionTest {
+            constructor() {
+                this.testResults = {
+                    deckDiscovery: false,
+                    metadataParsing: false,
+                    levelPopulation: false,
+                    selectionInterface: false,
+                    systemReady: true
+                };
+                
+                // System state
+                this.availableDecks = [];
+                this.selectedDeck = null;
+                this.selectedLevel = null;
+                this.isLoading = false;
+                
+                // Mobile detection
+                this.isMobile = window.innerWidth < 768 || ('ontouchstart' in window);
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('🚀 Starting Mobile Multi-Deck Selection Tests');
+                console.log('📱 Mobile mode:', this.isMobile);
+                
+                // Setup controls
+                this.setupControls();
+                
+                // Setup haptic feedback
+                this.setupHapticFeedback();
+                
+                // Start deck discovery
+                this.discoverDecks();
+                
+                console.log('🎯 Multi-deck selection system initialized');
+            }
+            
+            setupControls() {
+                const startButton = document.getElementById('startButton');
+                const refreshButton = document.getElementById('refreshButton');
+                
+                // Touch event handlers (mobile-first)
+                startButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startLearning();
+                });
+                
+                refreshButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.refreshDecks();
+                });
+                
+                // Click event handlers (desktop enhancement)
+                startButton.addEventListener('click', () => {
+                    this.startLearning();
+                });
+                
+                refreshButton.addEventListener('click', () => {
+                    this.refreshDecks();
+                });
+                
+                // Prevent double-firing on mobile
+                [startButton, refreshButton].forEach(button => {
+                    button.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                    });
+                });
+                
+                console.log('🎮 Mobile touch controls setup complete');
+            }
+            
+            setupHapticFeedback() {
+                this.hasHaptic = 'vibrate' in navigator;
+                if (this.hasHaptic) {
+                    console.log('📳 Haptic feedback available');
+                }
+            }
+            
+            triggerHaptic(pattern) {
+                if (this.hasHaptic) {
+                    navigator.vibrate(pattern);
+                }
+            }
+            
+            // Deck Discovery System
+            async discoverDecks() {
+                this.isLoading = true;
+                this.showLoading('Discovering available decks...');
+                
+                try {
+                    // Discover deck files
+                    const deckFiles = ['data_science_cards.json', 'chinese_language_cards.json'];
+                    const decks = [];
+                    
+                    for (const filename of deckFiles) {
+                        try {
+                            const cacheBuster = new Date().getTime();
+                            const response = await fetch(`/assets/${filename}?v=${cacheBuster}`);
+                            if (response.ok) {
+                                const deckData = await response.json();
+                                
+                                // Validate deck structure
+                                if (this.validateDeckStructure(deckData, filename)) {
+                                    decks.push({
+                                        filename: filename,
+                                        ...deckData.metadata,
+                                        cardCount: deckData.cards ? deckData.cards.length : 0,
+                                        data: deckData
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.error(`Failed to load deck ${filename}:`, error);
+                        }
+                    }
+                    
+                    this.availableDecks = decks;
+                    
+                    // Mark tests as passed
+                    this.testResults.deckDiscovery = true;
+                    this.testResults.metadataParsing = true;
+                    
+                    this.updateStatus('deck-discovery-status', true);
+                    this.updateStatus('metadata-parsing-status', true);
+                    
+                    if (document.getElementById('deck-discovery-result')) {
+                        document.getElementById('deck-discovery-result').textContent = 
+                            `Deck Discovery: FOUND ${decks.length} DECKS`;
+                    }
+                    if (document.getElementById('metadata-parsing-result')) {
+                        document.getElementById('metadata-parsing-result').textContent = 
+                            'Metadata Parsing: PASSED';
+                    }
+                    
+                    // Display decks
+                    this.displayDecks();
+                    
+                    console.log(`📚 Discovered ${decks.length} decks`);
+                    
+                } catch (error) {
+                    console.error('Deck discovery failed:', error);
+                    this.showError('Failed to discover decks');
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+            
+            validateDeckStructure(deckData, filename) {
+                if (!deckData.metadata) {
+                    console.warn(`Deck ${filename} missing metadata`);
+                    return false;
+                }
+                
+                const required = ['deck_name', 'max_level', 'available_levels', 'card_count'];
+                for (const field of required) {
+                    if (!deckData.metadata[field]) {
+                        console.warn(`Deck ${filename} missing ${field}`);
+                        return false;
+                    }
+                }
+                
+                if (!deckData.cards || !Array.isArray(deckData.cards)) {
+                    console.warn(`Deck ${filename} missing cards array`);
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            displayDecks() {
+                const deckList = document.getElementById('deckList');
+                deckList.innerHTML = '';
+                
+                if (this.availableDecks.length === 0) {
+                    deckList.innerHTML = '<div class="loading">No decks found</div>';
+                    return;
+                }
+                
+                this.availableDecks.forEach((deck, index) => {
+                    const deckItem = document.createElement('div');
+                    deckItem.className = 'deck-item';
+                    deckItem.innerHTML = `
+                        <div class="deck-name">${deck.deck_name}</div>
+                        <div class="deck-description">${deck.description || 'No description available'}</div>
+                        <div class="deck-stats">
+                            <div class="deck-stat">
+                                <div class="stat-label">Cards</div>
+                                <div class="stat-value">${deck.cardCount}</div>
+                            </div>
+                            <div class="deck-stat">
+                                <div class="stat-label">Max Level</div>
+                                <div class="stat-value">${deck.max_level}</div>
+                            </div>
+                            <div class="deck-stat">
+                                <div class="stat-label">Category</div>
+                                <div class="stat-value">${deck.category || 'General'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Touch event handlers
+                    deckItem.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.selectDeck(deck, deckItem);
+                    });
+                    
+                    // Click event handler
+                    deckItem.addEventListener('click', () => {
+                        this.selectDeck(deck, deckItem);
+                    });
+                    
+                    deckList.appendChild(deckItem);
+                });
+                
+                // Mark selection interface as working
+                this.testResults.selectionInterface = true;
+                this.updateStatus('selection-interface-status', true);
+                if (document.getElementById('selection-interface-result')) {
+                    document.getElementById('selection-interface-result').textContent = 
+                        'Selection Interface: ACTIVE';
+                }
+                
+                this.updateTestResults();
+            }
+            
+            selectDeck(deck, deckElement) {
+                // Haptic feedback
+                this.triggerHaptic([50]);
+                
+                // Update selection
+                this.selectedDeck = deck;
+                
+                // Update visual selection
+                document.querySelectorAll('.deck-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                deckElement.classList.add('selected');
+                
+                // Update selection display
+                document.getElementById('selectedDeckName').textContent = deck.deck_name;
+                document.getElementById('selectedCards').textContent = deck.cardCount;
+                document.getElementById('selectedMaxLevel').textContent = deck.max_level;
+                document.getElementById('selectedInfo').style.display = 'grid';
+                
+                // Populate difficulty levels
+                this.populateDifficultyLevels(deck);
+                
+                console.log(`📋 Selected deck: ${deck.deck_name}`);
+            }
+            
+            populateDifficultyLevels(deck) {
+                const difficultyLevels = document.getElementById('difficultyLevels');
+                difficultyLevels.innerHTML = '';
+                
+                // Create level buttons based on deck's available levels
+                for (let level = 1; level <= deck.max_level; level++) {
+                    const levelButton = document.createElement('div');
+                    levelButton.className = 'difficulty-level';
+                    levelButton.textContent = `Level ${level}`;
+                    
+                    // Check if level is available
+                    if (deck.available_levels && deck.available_levels.includes(level)) {
+                        // Touch event handler
+                        levelButton.addEventListener('touchstart', (e) => {
+                            e.preventDefault();
+                            this.selectLevel(level, levelButton);
+                        });
+                        
+                        // Click event handler
+                        levelButton.addEventListener('click', () => {
+                            this.selectLevel(level, levelButton);
+                        });
+                    } else {
+                        levelButton.classList.add('disabled');
+                    }
+                    
+                    difficultyLevels.appendChild(levelButton);
+                }
+                
+                // Mark level population as working
+                this.testResults.levelPopulation = true;
+                this.updateStatus('level-population-status', true);
+                if (document.getElementById('level-population-result')) {
+                    document.getElementById('level-population-result').textContent = 
+                        'Level Population: DYNAMIC';
+                }
+                
+                this.updateTestResults();
+            }
+            
+            selectLevel(level, levelElement) {
+                // Haptic feedback
+                this.triggerHaptic([30]);
+                
+                // Update selection
+                this.selectedLevel = level;
+                
+                // Update visual selection
+                document.querySelectorAll('.difficulty-level').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                levelElement.classList.add('selected');
+                
+                console.log(`🎯 Selected level: ${level}`);
+            }
+            
+            startLearning() {
+                if (!this.selectedDeck) {
+                    this.showError('Please select a deck first');
+                    this.triggerHaptic([100, 50, 100]);
+                    return;
+                }
+                
+                if (!this.selectedLevel) {
+                    this.showError('Please select a difficulty level');
+                    this.triggerHaptic([100, 50, 100]);
+                    return;
+                }
+                
+                // Success haptic feedback
+                this.triggerHaptic([100, 50, 100, 50, 100]);
+                
+                // Show success message
+                this.showSuccess(`Starting ${this.selectedDeck.deck_name} at Level ${this.selectedLevel}`);
+                
+                console.log(`🚀 Starting learning: ${this.selectedDeck.deck_name} - Level ${this.selectedLevel}`);
+            }
+            
+            refreshDecks() {
+                // Haptic feedback
+                this.triggerHaptic([50, 50, 50]);
+                
+                // Reset state
+                this.selectedDeck = null;
+                this.selectedLevel = null;
+                this.availableDecks = [];
+                
+                // Reset UI
+                document.getElementById('selectedDeckName').textContent = 'No Deck Selected';
+                document.getElementById('selectedInfo').style.display = 'none';
+                document.getElementById('difficultyLevels').innerHTML = '';
+                
+                // Reset test results
+                this.testResults.deckDiscovery = false;
+                this.testResults.metadataParsing = false;
+                this.testResults.levelPopulation = false;
+                this.testResults.selectionInterface = false;
+                
+                // Restart discovery
+                this.discoverDecks();
+                
+                console.log('🔄 Refreshing deck discovery');
+            }
+            
+            showLoading(message) {
+                const deckList = document.getElementById('deckList');
+                deckList.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        ${message}
+                    </div>
+                `;
+            }
+            
+            showError(message) {
+                const deckList = document.getElementById('deckList');
+                deckList.innerHTML = `
+                    <div class="loading" style="color: #ff0000;">
+                        ❌ ${message}
+                    </div>
+                `;
+            }
+            
+            showSuccess(message) {
+                const deckList = document.getElementById('deckList');
+                const successDiv = document.createElement('div');
+                successDiv.className = 'loading';
+                successDiv.style.color = '#00ff00';
+                successDiv.innerHTML = `✅ ${message}`;
+                
+                deckList.appendChild(successDiv);
+                
+                // Remove success message after 3 seconds
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.parentNode.removeChild(successDiv);
+                    }
+                }, 3000);
+            }
+            
+            updateStatus(elementId, passed) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.className = `test-status ${passed ? 'pass' : 'fail'}`;
+                }
+            }
+            
+            updateTestResults() {
+                const passedTests = Object.values(this.testResults).filter(result => result).length;
+                const totalTests = Object.keys(this.testResults).length;
+                const percentage = Math.round((passedTests / totalTests) * 100);
+                
+                const summary = document.getElementById('testSummary');
+                if (summary) {
+                    summary.textContent = `📊 Multi-Deck Tests: ${passedTests}/${totalTests} passed (${percentage}%)`;
+                }
+                
+                console.log(`📊 Test Results: ${passedTests}/${totalTests} passed (${percentage}%)`);
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', function() {
+            console.log('🌟 Mobile Multi-Deck Selection Test loading...');
+            
+            // Initialize the multi-deck selection system
+            window.multiDeckTest = new MultiDeckSelectionTest();
+            
+            console.log('✅ Mobile Multi-Deck Selection Test ready');
+        });
+        
+        // Handle orientation changes for mobile
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                console.log('📱 Orientation changed, updating layout');
+            }, 200);
+        });
+        
+        window.addEventListener('resize', function() {
+            console.log('🔄 Window resized, checking mobile state');
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progressive Gameplay Verification</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            margin: 0;
+        }
+        .test-section {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #00ffff; }
+        button {
+            background: #003366;
+            color: #00ffff;
+            border: 1px solid #00ffff;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #gameFrame {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #00ffff;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Progressive Gameplay Verification</h1>
+    
+    <iframe id="gameFrame" src="../index.html"></iframe>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+    
+    <button onclick="runTest()">Run Test</button>
+    <button onclick="clearResults()">Clear</button>
+
+    <script>
+        function addResult(status, message) {
+            const div = document.createElement('div');
+            div.className = status;
+            div.textContent = `${status.toUpperCase()}: ${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function runTest() {
+            clearResults();
+            addResult('info', 'Testing progressive gameplay features...');
+            
+            try {
+                const gameWindow = document.getElementById('gameFrame').contentWindow;
+                
+                // Wait for game to load
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Test deck discovery
+                if (typeof gameWindow.discoverAvailableDecks === 'function') {
+                    addResult('pass', 'Deck discovery function exists');
+                } else {
+                    addResult('fail', 'Deck discovery function missing');
+                }
+                
+                // Test card states
+                if (gameWindow.cardStates && gameWindow.learnedCards) {
+                    addResult('pass', 'Card state system exists');
+                } else {
+                    addResult('fail', 'Card state system missing');
+                }
+                
+                // Test lives system
+                if (typeof gameWindow.lives === 'number') {
+                    addResult('pass', `Lives system initialized: ${gameWindow.lives}`);
+                } else {
+                    addResult('fail', 'Lives system missing');
+                }
+                
+                // Test progression level
+                if (typeof gameWindow.currentProgressionLevel === 'number') {
+                    addResult('pass', `Progression level: ${gameWindow.currentProgressionLevel}`);
+                } else {
+                    addResult('fail', 'Progression level missing');
+                }
+                
+                addResult('info', 'Test completed');
+                
+            } catch (error) {
+                addResult('fail', `Test error: ${error.message}`);
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(runTest, 1000);
+        });
+    </script>
+</body>
+</html> 
