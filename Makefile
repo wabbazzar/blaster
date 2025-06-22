@@ -197,3 +197,7 @@ test-new-features:
 # Swipe controls and toggle testing
 test-swipe-toggle:
 	@open http://localhost:8000/tests/test_swipe_and_toggle_features.html || xdg-open http://localhost:8000/tests/test_swipe_and_toggle_features.html
+
+# Highlight border fix testing
+test-highlight-border:
+	@open http://localhost:8000/tests/test_highlight_border_fix.html || xdg-open http://localhost:8000/tests/test_highlight_border_fix.html

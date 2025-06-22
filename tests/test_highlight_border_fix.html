@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highlight Border Fix Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 600px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .warning { color: #ffff00; }
+        .info { color: #00ffff; }
+        button { 
+            background: #003366; 
+            color: #00ffff; 
+            border: 1px solid #00ffff; 
+            padding: 10px; 
+            margin: 5px; 
+            cursor: pointer;
+        }
+        button:hover { background: #005588; }
+        #results { 
+            max-height: 400px; 
+            overflow-y: auto; 
+            border: 1px solid #00ffff; 
+            padding: 10px; 
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Highlight Border Fix Test</h1>
+    <p>This test verifies that correct answer borders match wrong answer borders when highlighting is turned off.</p>
+    
+    <iframe id="gameFrame" src="../index.html"></iframe>
+    
+    <div>
+        <button onclick="testBorderConsistency()">Test Border Consistency</button>
+        <button onclick="toggleHighlightAndTest()">Toggle Highlight & Test</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results">
+        <h3>Test Results:</h3>
+    </div>
+
+    <script>
+        function log(type, message) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '<h3>Test Results:</h3>';
+        }
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function getGameWindow() {
+            return document.getElementById('gameFrame').contentWindow;
+        }
+        
+        function testBorderConsistency() {
+            log('info', '=== Testing Border Consistency ===');
+            
+            const gameDoc = getGameDoc();
+            const gameWin = getGameWindow();
+            
+            // Wait for game to load
+            setTimeout(() => {
+                // Start the game first
+                const startButton = gameDoc.getElementById('startButton');
+                if (startButton) {
+                    startButton.click();
+                    log('info', 'Game started');
+                    
+                    // Wait for targets to appear
+                    setTimeout(() => {
+                        const targets = gameDoc.querySelectorAll('.target');
+                        log('info', `Found ${targets.length} targets`);
+                        
+                        let correctTargets = [];
+                        let wrongTargets = [];
+                        
+                        targets.forEach((target, index) => {
+                            const isCorrect = target.dataset.isCorrect === 'true';
+                            const computedStyle = gameWin.getComputedStyle(target);
+                            const border = computedStyle.border;
+                            const borderColor = computedStyle.borderColor;
+                            const background = computedStyle.backgroundColor;
+                            
+                            if (isCorrect) {
+                                correctTargets.push({
+                                    index,
+                                    border,
+                                    borderColor,
+                                    background,
+                                    classList: Array.from(target.classList)
+                                });
+                            } else {
+                                wrongTargets.push({
+                                    index,
+                                    border,
+                                    borderColor,
+                                    background
+                                });
+                            }
+                            
+                            log('info', `Target ${index} (${isCorrect ? 'CORRECT' : 'WRONG'}): border="${border}", borderColor="${borderColor}"`);
+                        });
+                        
+                        // Compare borders
+                        if (correctTargets.length > 0 && wrongTargets.length > 0) {
+                            const correctBorder = correctTargets[0].border;
+                            const wrongBorder = wrongTargets[0].border;
+                            const correctBorderColor = correctTargets[0].borderColor;
+                            const wrongBorderColor = wrongTargets[0].borderColor;
+                            
+                            if (correctBorder === wrongBorder && correctBorderColor === wrongBorderColor) {
+                                log('pass', `✅ BORDER CONSISTENCY PASSED: Correct and wrong answers have matching borders`);
+                                log('pass', `   Correct border: "${correctBorder}"`);
+                                log('pass', `   Wrong border: "${wrongBorder}"`);
+                            } else {
+                                log('fail', `❌ BORDER CONSISTENCY FAILED: Borders don't match`);
+                                log('fail', `   Correct border: "${correctBorder}" (color: ${correctBorderColor})`);
+                                log('fail', `   Wrong border: "${wrongBorder}" (color: ${wrongBorderColor})`);
+                            }
+                            
+                            // Check CSS classes on correct targets
+                            correctTargets.forEach(target => {
+                                log('info', `Correct target ${target.index} classes: ${target.classList.join(', ')}`);
+                            });
+                        } else {
+                            log('warning', '⚠️ Could not find both correct and wrong targets for comparison');
+                        }
+                        
+                    }, 2000);
+                } else {
+                    log('fail', '❌ Could not find start button');
+                }
+            }, 1000);
+        }
+        
+        function toggleHighlightAndTest() {
+            log('info', '=== Testing Highlight Toggle ===');
+            
+            const gameDoc = getGameDoc();
+            const gameWin = getGameWindow();
+            
+            // Wait for game to load
+            setTimeout(() => {
+                // Find and click the highlight toggle
+                const toggle = gameDoc.getElementById('highlightToggle');
+                if (toggle) {
+                    log('info', 'Found highlight toggle, clicking to turn OFF highlighting');
+                    toggle.click();
+                    
+                    // Start the game
+                    const startButton = gameDoc.getElementById('startButton');
+                    if (startButton) {
+                        startButton.click();
+                        log('info', 'Game started with highlighting OFF');
+                        
+                        // Wait for targets to appear
+                        setTimeout(() => {
+                            testBorderConsistency();
+                        }, 2000);
+                    }
+                } else {
+                    log('fail', '❌ Could not find highlight toggle');
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html> 
