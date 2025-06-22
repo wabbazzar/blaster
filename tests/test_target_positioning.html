@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Target Positioning Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 500px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .warning { color: #ffff00; }
+        button { background: #003366; color: #00ffff; border: 1px solid #00ffff; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Target Positioning Test</h1>
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="testTargetBoundaries()">Test Target Boundaries</button>
+        <button onclick="testTargetMovement()">Test Target Movement</button>
+        <button onclick="testTargetOverlaps()">Test Target Overlaps</button>
+        <button onclick="simulateGameplay()">Simulate Gameplay</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(type, msg) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${type.toUpperCase()}: ${msg}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`${type.toUpperCase()}: ${msg}`);
+        }
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function getGameWindow() {
+            return document.getElementById('gameFrame').contentWindow;
+        }
+        
+        function testTargetBoundaries() {
+            log('warning', '=== Testing Target Spawn Boundaries ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                const scoreboard = gameDoc.getElementById('scoreArea');
+                const targets = gameDoc.querySelectorAll('.target');
+                
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                const scoreboardRect = scoreboard ? scoreboard.getBoundingClientRect() : null;
+                
+                log('warning', `Game board top: ${gameBoardRect.top}px`);
+                if (scoreboardRect) {
+                    log('warning', `Scoreboard bottom: ${scoreboardRect.bottom}px`);
+                }
+                
+                targets.forEach((target, index) => {
+                    const targetRect = target.getBoundingClientRect();
+                    
+                    // Check if target is above game board (in scoreboard area)
+                    if (targetRect.bottom < gameBoardRect.top) {
+                        log('fail', `Target ${index} is above game board (target bottom: ${targetRect.bottom}px < board top: ${gameBoardRect.top}px)`);
+                    } else if (targetRect.top < gameBoardRect.top && targetRect.bottom > gameBoardRect.top) {
+                        log('warning', `Target ${index} partially above game board`);
+                    } else {
+                        log('pass', `Target ${index} properly positioned relative to game board`);
+                    }
+                    
+                    // Check horizontal boundaries
+                    if (targetRect.left < gameBoardRect.left || targetRect.right > gameBoardRect.right) {
+                        log('fail', `Target ${index} extends outside game board horizontally`);
+                    } else {
+                        log('pass', `Target ${index} within horizontal boundaries`);
+                    }
+                });
+                
+            }, 1000);
+        }
+        
+        function testTargetMovement() {
+            log('warning', '=== Testing Target Movement ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const targets = gameDoc.querySelectorAll('.target');
+                const initialPositions = [];
+                
+                targets.forEach((target, index) => {
+                    initialPositions[index] = {
+                        top: parseInt(target.style.top),
+                        left: parseInt(target.style.left)
+                    };
+                });
+                
+                // Check again after 2 seconds
+                setTimeout(() => {
+                    targets.forEach((target, index) => {
+                        if (target.parentNode) { // Still exists
+                            const currentTop = parseInt(target.style.top);
+                            const currentLeft = parseInt(target.style.left);
+                            
+                            if (currentTop > initialPositions[index].top) {
+                                log('pass', `Target ${index} is moving down (${initialPositions[index].top} -> ${currentTop})`);
+                            } else if (currentTop === initialPositions[index].top) {
+                                log('fail', `Target ${index} is STUCK/FROZEN at Y: ${currentTop}px`);
+                            }
+                            
+                            if (currentLeft !== initialPositions[index].left) {
+                                log('warning', `Target ${index} moved horizontally (unexpected)`);
+                            }
+                        }
+                    });
+                }, 2000);
+                
+            }, 1000);
+        }
+        
+        function testTargetOverlaps() {
+            log('warning', '=== Testing Target Overlaps ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const targets = gameDoc.querySelectorAll('.target');
+                let overlapCount = 0;
+                
+                for (let i = 0; i < targets.length; i++) {
+                    for (let j = i + 1; j < targets.length; j++) {
+                        const rect1 = targets[i].getBoundingClientRect();
+                        const rect2 = targets[j].getBoundingClientRect();
+                        
+                        // Check for actual overlap (not just proximity)
+                        const overlap = !(rect1.right <= rect2.left || 
+                                        rect2.right <= rect1.left || 
+                                        rect1.bottom <= rect2.top || 
+                                        rect2.bottom <= rect1.top);
+                        
+                        if (overlap) {
+                            overlapCount++;
+                            log('fail', `Targets ${i} and ${j} are OVERLAPPING`);
+                        }
+                    }
+                }
+                
+                if (overlapCount === 0) {
+                    log('pass', 'No target overlaps detected');
+                } else {
+                    log('fail', `${overlapCount} target overlaps found`);
+                }
+                
+            }, 1000);
+        }
+        
+        function simulateGameplay() {
+            log('warning', '=== Simulating Gameplay ===');
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Trigger new question multiple times to test for stuck targets
+            let questionCount = 0;
+            const maxQuestions = 3;
+            
+            function triggerNextQuestion() {
+                if (questionCount < maxQuestions) {
+                    questionCount++;
+                    log('warning', `Triggering question ${questionCount}`);
+                    
+                    if (gameWin.loadNewQuestion) {
+                        gameWin.loadNewQuestion();
+                    }
+                    
+                    // Check for stuck targets after each question
+                    setTimeout(() => {
+                        const targets = gameDoc.querySelectorAll('.target');
+                        log('warning', `Active targets after question ${questionCount}: ${targets.length}`);
+                        
+                        setTimeout(triggerNextQuestion, 3000);
+                    }, 1000);
+                } else {
+                    log('warning', 'Gameplay simulation complete');
+                }
+            }
+            
+            triggerNextQuestion();
+        }
+    </script>
+</body>
+</html> 

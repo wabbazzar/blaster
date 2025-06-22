@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoring Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 400px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        button { background: #003366; color: #00ffff; border: 1px solid #00ffff; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Scoring System Test</h1>
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="testScoreDisplay()">Test Score Display</button>
+        <button onclick="testScoreUpdate()">Test Score Update</button>
+        <button onclick="testLevelDisplay()">Test Level Display</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(pass, msg) {
+            const div = document.createElement('div');
+            div.className = pass ? 'pass' : 'fail';
+            div.textContent = (pass ? 'PASS: ' : 'FAIL: ') + msg;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        function testScoreDisplay() {
+            const gameDoc = document.getElementById('gameFrame').contentDocument;
+            
+            setTimeout(() => {
+                const scoreArea = gameDoc.getElementById('scoreArea');
+                const scoreValue = gameDoc.getElementById('scoreValue');
+                
+                log(scoreArea !== null, 'Score area exists');
+                log(scoreValue !== null, 'Score value element exists');
+                log(scoreValue.textContent === '0', 'Initial score is 0');
+            }, 500);
+        }
+        
+        function testScoreUpdate() {
+            const gameWin = document.getElementById('gameFrame').contentWindow;
+            const gameDoc = document.getElementById('gameFrame').contentDocument;
+            
+            setTimeout(() => {
+                const initialScore = parseInt(gameDoc.getElementById('scoreValue').textContent);
+                
+                // Update score
+                gameWin.updateScore(100);
+                
+                setTimeout(() => {
+                    const newScore = parseInt(gameDoc.getElementById('scoreValue').textContent);
+                    log(newScore === initialScore + 100, `Score increased by 100 (${initialScore} -> ${newScore})`);
+                }, 100);
+            }, 500);
+        }
+        
+        function testLevelDisplay() {
+            const gameDoc = document.getElementById('gameFrame').contentDocument;
+            const gameWin = document.getElementById('gameFrame').contentWindow;
+            
+            setTimeout(() => {
+                const levelValue = gameDoc.getElementById('levelValue');
+                
+                log(levelValue !== null, 'Level value element exists');
+                log(levelValue.textContent === '1', 'Initial level is 1');
+                
+                // Test level update
+                gameWin.updateLevel(2);
+                
+                setTimeout(() => {
+                    log(levelValue.textContent === '2', 'Level updated to 2');
+                }, 100);
+            }, 500);
+        }
+    </script>
+</body>
+</html> 

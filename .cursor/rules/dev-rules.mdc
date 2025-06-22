@@ -1,0 +1,223 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Card Blaster Development Rules
+
+## Core Development Principles
+
+### 1. TEST FIRST - NO EXCEPTIONS
+- **NEVER** claim anything is "complete" or "working" without actual testing
+- **ALWAYS** test each feature immediately after implementation
+- **ALWAYS** run visual tests before moving to next phase
+- **ALWAYS** verify in browser before proceeding
+- Use `make serve` and test in browser at each step
+
+### 2. Mobile-First Progressive Enhancement
+- **ALWAYS** implement mobile experience first
+- **ALWAYS** test touch controls before keyboard controls
+- **ALWAYS** verify responsive design at 320px, 768px, 1024px+ breakpoints
+- **ALWAYS** test on actual mobile devices when possible
+
+### 3. Mathematical Accuracy Requirements
+- **Level Progression**: Exactly 42 levels with precise mathematical formulas
+- **Sample Set Size**: `floor(5 + (level - 1) * 1.12)` - MUST be exact
+- **Cards to Progress**: `floor(sampleSetSize * 0.6)` - MUST be exact  
+- **Progression Level**: `min(7, floor(1 + (level - 1) * 0.15))` - MUST be exact
+- **Falling Speed**: `1.0 + (level - 1) * 0.05` - MUST be exact
+- **Question Scaling**: 1 question (levels 1-14), 2 questions (15-28), 3 questions (29-42)
+
+### 4. Beta Distribution Implementation
+- **MUST** use Beta(2, 5) distribution for card selection weighting
+- **MUST** implement proper probability weighting:
+  - New cards: 70% selection probability
+  - Partially learned: 50% * Beta(2,5) sample
+  - Mastered cards: 20% * Beta(2,5) sample
+- **MUST** track card mastery (3+ correct = mastered)
+
+### 5. Game Mechanics Requirements
+- **Lives System**: Start 5, gain 1 per level, max 10
+- **Life Loss**: Wrong shot, correct answer missed, wrong answer hits ship
+- **Scoring**: +100 points per correct answer only
+- **Hit Animations**: Blue burst (correct), red explosion (wrong)
+- **Screen Effects**: Shake on life loss, flash on level up
+
+### 6. Visual Design - Tron Aesthetic
+- **Color Palette**: Cyan (#00ffff), electric blue, dark backgrounds
+- **Effects**: Glowing outlines, neon borders, particle effects
+- **Typography**: Futuristic monospace (Orbitron preferred)
+- **Animations**: Smooth 60 FPS, proper CSS keyframes
+
+### 7. Data Integration Rules
+- **MUST** use existing `assets/data_science_cards.json` (52 cards)
+- **MUST** filter by progression_level (1-7) based on current level
+- **MUST** use provided wrong_answers from each card
+- **MUST** display questions as "What is [term]?"
+- **MUST** show definition as correct answer
+
+## Testing Protocol
+
+### Phase Testing Checklist
+Before claiming any phase complete, **MUST** verify:
+
+1. **Visual Test**: Open in browser, verify appearance
+2. **Functional Test**: Test all interactions work correctly
+3. **Mobile Test**: Test touch controls on mobile viewport
+4. **Mathematical Test**: Verify formulas produce correct values
+5. **Performance Test**: Verify 60 FPS smooth operation
+6. **Cross-browser Test**: Test in multiple browsers
+
+### Debugging Protocol
+When issues occur:
+1. **Check browser console** for JavaScript errors
+2. **Verify DOM elements** exist with correct IDs
+3. **Test mathematical functions** in isolation
+4. **Verify event listeners** are properly attached
+5. **Check responsive design** at different screen sizes
+
+### Server Management
+- **Port conflicts**: Kill existing servers before starting new ones
+- **Cache issues**: Use cache-busting headers and hard refresh
+- **Asset loading**: Verify all assets load without 404 errors
+
+## Implementation Phases
+
+### Phase 0: Environment Setup
+- [ ] Makefile with cross-platform commands
+- [ ] Visual test harness working
+- [ ] Mathematical test suite passing
+- [ ] Mobile test suite functional
+- [ ] Server running without errors
+
+### Phase 1: Core Game Loop
+- [ ] Ship movement (keyboard + touch + mouse)
+- [ ] Projectile system working
+- [ ] Game loop running at 60 FPS
+- [ ] Input handling unified across platforms
+- [ ] Visual feedback on all actions
+
+### Phase 2: Mathematical System
+- [ ] All 42 level formulas implemented correctly
+- [ ] Sample set filtering by progression level
+- [ ] Cards to progress calculation accurate
+- [ ] Speed progression working
+- [ ] Question scaling (1/2/3 questions) working
+
+### Phase 3: Card Selection System
+- [ ] Beta distribution implemented correctly
+- [ ] Card mastery tracking functional
+- [ ] Weighted selection working
+- [ ] New vs mastered card probability correct
+- [ ] Card progression through levels working
+
+### Phase 4: Target System
+- [ ] Hexagonal targets spawning
+- [ ] Multiple choice answers correct
+- [ ] Collision detection accurate
+- [ ] Hit animations working
+- [ ] Target cleanup on question change
+
+### Phase 5: Game Systems
+- [ ] Lives system working (start 5, gain 1, max 10)
+- [ ] All life loss conditions working
+- [ ] Scoring system accurate (+100 per correct)
+- [ ] Level progression automatic
+- [ ] Game over handling proper
+
+### Phase 6: Visual Polish
+- [ ] Tron aesthetic consistent
+- [ ] All animations smooth
+- [ ] Screen effects working
+- [ ] Responsive design perfect
+- [ ] No visual glitches
+
+### Phase 7: UI/UX Systems
+- [ ] Start menu overlay working
+- [ ] Pause overlay functional
+- [ ] Game over overlay styled (NO BROWSER ALERTS)
+- [ ] HUD displaying correctly
+- [ ] All overlays properly styled
+
+## Critical Success Criteria
+
+### Gameplay Must Work
+- [ ] Ship moves smoothly with all input methods
+- [ ] Projectiles fire and move correctly
+- [ ] Targets fall and can be hit
+- [ ] Questions change after correct hits
+- [ ] Score increases on correct hits
+- [ ] Lives decrease on wrong actions
+- [ ] Levels progress automatically
+
+### Mathematical Accuracy
+- [ ] All formulas produce exact expected values
+- [ ] Level 1: 5 cards, need 3 correct, speed 1.0
+- [ ] Level 42: 52 cards, need 31 correct, speed 3.05
+- [ ] Beta distribution working correctly
+- [ ] Card selection probabilities accurate
+
+### Visual Quality
+- [ ] Tron aesthetic consistent throughout
+- [ ] No browser alerts or ugly popups
+- [ ] All overlays properly styled
+- [ ] Responsive design works 320px to 1920px+
+- [ ] 60 FPS performance maintained
+
+### Cross-Platform Compatibility
+- [ ] Works on desktop browsers (Chrome, Firefox, Safari)
+- [ ] Works on mobile browsers (iOS Safari, Android Chrome)
+- [ ] Touch controls responsive and accurate
+- [ ] Keyboard controls working
+- [ ] Mouse controls working
+
+## Error Prevention Rules
+
+### Before Any Code Changes
+1. **Test current state** - verify what's working/broken
+2. **Make minimal changes** - one feature at a time
+3. **Test immediately** - verify change works
+4. **Fix before proceeding** - don't accumulate bugs
+
+### Before Claiming Completion
+1. **Full gameplay test** - play through multiple levels
+2. **Mathematical verification** - check all formulas
+3. **Cross-device test** - verify mobile and desktop
+4. **Performance test** - ensure 60 FPS maintained
+5. **Visual test** - verify Tron aesthetic consistent
+
+### Common Pitfalls to Avoid
+- **DOM element IDs** - ensure they match between HTML and JavaScript
+- **Event listeners** - verify they're attached after DOM ready
+- **Async operations** - handle loading states properly
+- **Mathematical precision** - use exact formulas, not approximations
+- **Mobile viewport** - test actual mobile devices, not just browser dev tools
+
+## Definition of Done
+
+A feature is **NOT DONE** until:
+1. **Visually tested** in browser
+2. **Functionally verified** through user interaction
+3. **Mathematically accurate** if applicable
+4. **Cross-platform compatible** (mobile + desktop)
+5. **Performance optimized** (60 FPS maintained)
+6. **Visually polished** (Tron aesthetic consistent)
+7. **Error-free** (no console errors)
+8. **Responsive** (works at all screen sizes)
+
+**NEVER** claim completion without completing ALL criteria above.
+
+## Emergency Debugging Checklist
+
+When things break:
+1. **Check browser console** - look for JavaScript errors
+2. **Verify server running** - check terminal for errors
+3. **Clear browser cache** - hard refresh (Cmd+Shift+R)
+4. **Check DOM structure** - verify elements exist
+5. **Test mathematical functions** - verify calculations
+6. **Check event listeners** - verify they're attached
+7. **Test step by step** - isolate the broken component
+8. **Revert if necessary** - go back to last working state
+
+Remember: **WORKING CODE > PERFECT CODE**
+Get it working first, then optimize and polish.

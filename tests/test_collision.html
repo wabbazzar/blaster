@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collision Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 400px; border: 1px solid #00ffff; }
+        #testResults { margin-top: 20px; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        button { background: #003366; color: #00ffff; border: 1px solid #00ffff; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Collision Test Framework</h1>
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="testCollisionDetection()">Test Collision Detection</button>
+        <button onclick="testProjectileRemoval()">Test Projectile Removal</button>
+        <button onclick="testTargetRemoval()">Test Target Removal</button>
+        <button onclick="testQuestionUpdate()">Test Question Update</button>
+    </div>
+    
+    <div id="testResults">
+        <h2>Test Results:</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        console.log('Collision test framework loaded');
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function getGameWindow() {
+            return document.getElementById('gameFrame').contentWindow;
+        }
+        
+        function log(pass, msg) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = pass ? 'pass' : 'fail';
+            div.textContent = (pass ? 'PASS: ' : 'FAIL: ') + msg;
+            results.appendChild(div);
+            console.log((pass ? 'PASS: ' : 'FAIL: ') + msg);
+        }
+        
+        // Wait for iframe to load
+        document.getElementById('gameFrame').onload = function() {
+            setTimeout(() => {
+                log(true, 'Game loaded, ready for collision testing');
+            }, 100);
+        };
+        
+        function testCollisionDetection() {
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Create a target at a specific position
+            gameWin.createTarget();
+            const target = gameDoc.querySelector('.target');
+            target.style.left = '200px';
+            target.style.top = '300px';
+            
+            // Create a projectile that will hit the target
+            gameWin.createProjectile();
+            const projectile = gameDoc.querySelector('.projectile');
+            projectile.style.left = '200px';
+            projectile.style.bottom = '300px';
+            
+            // Force collision check
+            const proj = gameWin.projectiles[gameWin.projectiles.length - 1];
+            gameWin.checkCollisions(proj, gameWin.projectiles.length - 1);
+            
+            // Check if collision was detected (elements should be removed)
+            setTimeout(() => {
+                const remainingTargets = gameDoc.querySelectorAll('.target').length;
+                const remainingProjectiles = gameDoc.querySelectorAll('.projectile').length;
+                log(remainingTargets < 1, 'Target removed after collision');
+                log(remainingProjectiles < 1, 'Projectile removed after collision');
+            }, 100);
+        }
+        
+        function testProjectileRemoval() {
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Count projectiles before
+            const beforeCount = gameDoc.querySelectorAll('.projectile').length;
+            
+            // Create projectile and target for collision
+            gameWin.createProjectile();
+            gameWin.createTarget();
+            
+            // Position them to collide
+            const projectile = gameDoc.querySelector('.projectile');
+            const target = gameDoc.querySelector('.target');
+            projectile.style.left = '150px';
+            projectile.style.bottom = '250px';
+            target.style.left = '150px';
+            target.style.top = '250px';
+            
+            // Trigger collision
+            const proj = gameWin.projectiles[gameWin.projectiles.length - 1];
+            gameWin.checkCollisions(proj, gameWin.projectiles.length - 1);
+            
+            setTimeout(() => {
+                const afterCount = gameDoc.querySelectorAll('.projectile').length;
+                log(afterCount <= beforeCount, 'Projectile count decreased after collision');
+            }, 50);
+        }
+        
+        function testTargetRemoval() {
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Count targets before
+            const beforeCount = gameDoc.querySelectorAll('.target').length;
+            
+            // Create target and projectile for collision
+            gameWin.createTarget();
+            gameWin.createProjectile();
+            
+            // Position them to collide
+            const target = gameDoc.querySelector('.target');
+            const projectile = gameDoc.querySelector('.projectile');
+            target.style.left = '100px';
+            target.style.top = '200px';
+            projectile.style.left = '100px';
+            projectile.style.bottom = '400px';
+            
+            // Trigger collision
+            const proj = gameWin.projectiles[gameWin.projectiles.length - 1];
+            gameWin.checkCollisions(proj, gameWin.projectiles.length - 1);
+            
+            setTimeout(() => {
+                const afterCount = gameDoc.querySelectorAll('.target').length;
+                log(afterCount <= beforeCount, 'Target count decreased after collision');
+            }, 50);
+        }
+        
+        function testQuestionUpdate() {
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Get initial question text
+            const questionText = gameDoc.getElementById('questionText');
+            const initialText = questionText.textContent;
+            
+            // Create collision scenario
+            gameWin.createTarget();
+            gameWin.createProjectile();
+            
+            const target = gameDoc.querySelector('.target');
+            const projectile = gameDoc.querySelector('.projectile');
+            target.style.left = '50px';
+            target.style.top = '150px';
+            projectile.style.left = '50px';
+            projectile.style.bottom = '450px';
+            
+            // Trigger collision
+            const proj = gameWin.projectiles[gameWin.projectiles.length - 1];
+            gameWin.checkCollisions(proj, gameWin.projectiles.length - 1);
+            
+            setTimeout(() => {
+                const newText = questionText.textContent;
+                log(newText !== initialText, 'Question text updated after collision');
+                log(newText.includes('Target Hit'), 'Question shows collision message');
+            }, 50);
+        }
+    </script>
+</body>
+</html> 

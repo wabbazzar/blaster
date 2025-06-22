@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Game Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 500px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #ffff00; }
+        button { background: #003366; color: #00ffff; border: 1px solid #00ffff; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Complete Game Test</h1>
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="runFullTest()">Run Full Game Test</button>
+        <button onclick="playGame()">Play Game Demo</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(type, msg) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = msg;
+            document.getElementById('results').appendChild(div);
+            console.log(msg);
+        }
+        
+        function runFullTest() {
+            log('info', '=== STARTING COMPLETE GAME TEST ===');
+            
+            const gameDoc = document.getElementById('gameFrame').contentDocument;
+            const gameWin = document.getElementById('gameFrame').contentWindow;
+            
+            setTimeout(() => {
+                // Test 1: Foundation
+                log('info', '--- Testing Foundation ---');
+                log(gameDoc.getElementById('gameBoard') ? 'pass' : 'fail', 'Game board exists');
+                log(gameDoc.getElementById('ship') ? 'pass' : 'fail', 'Ship exists');
+                log(gameDoc.getElementById('questionArea') ? 'pass' : 'fail', 'Question area exists');
+                log(gameDoc.getElementById('scoreArea') ? 'pass' : 'fail', 'Score area exists');
+                
+                // Test 2: Data Loading
+                log('info', '--- Testing Data Loading ---');
+                log(gameWin.flashcards && gameWin.flashcards.length > 0 ? 'pass' : 'fail', 
+                    `Flashcards loaded: ${gameWin.flashcards ? gameWin.flashcards.length : 0} cards`);
+                log(gameWin.currentQuestion ? 'pass' : 'fail', 'Current question set');
+                
+                // Test 3: Movement
+                log('info', '--- Testing Ship Movement ---');
+                const initialLeft = parseInt(gameDoc.getElementById('ship').style.left);
+                gameWin.moveShip(1);
+                const newLeft = parseInt(gameDoc.getElementById('ship').style.left);
+                log(newLeft > initialLeft ? 'pass' : 'fail', 'Ship moves right');
+                
+                // Test 4: Projectiles
+                log('info', '--- Testing Projectiles ---');
+                const projCountBefore = gameDoc.querySelectorAll('.projectile').length;
+                gameWin.createProjectile();
+                const projCountAfter = gameDoc.querySelectorAll('.projectile').length;
+                log(projCountAfter > projCountBefore ? 'pass' : 'fail', 'Projectile created');
+                
+                // Test 5: Targets
+                log('info', '--- Testing Answer Targets ---');
+                const targets = gameDoc.querySelectorAll('.target');
+                log(targets.length > 0 ? 'pass' : 'fail', `Answer targets exist: ${targets.length}`);
+                
+                // Test 6: Scoring
+                log('info', '--- Testing Scoring ---');
+                const initialScore = parseInt(gameDoc.getElementById('scoreValue').textContent);
+                gameWin.updateScore(100);
+                const newScore = parseInt(gameDoc.getElementById('scoreValue').textContent);
+                log(newScore === initialScore + 100 ? 'pass' : 'fail', 'Score updates correctly');
+                
+                log('info', '=== COMPLETE GAME TEST FINISHED ===');
+                
+            }, 1500); // Give time for async loading
+        }
+        
+        function playGame() {
+            log('info', '=== PLAYING GAME DEMO ===');
+            
+            const gameDoc = document.getElementById('gameFrame').contentDocument;
+            const gameWin = document.getElementById('gameFrame').contentWindow;
+            
+            setTimeout(() => {
+                // Move ship to center
+                const ship = gameDoc.getElementById('ship');
+                ship.style.left = '180px';
+                
+                // Fire projectile
+                gameWin.createProjectile();
+                
+                log('info', 'Demo: Ship positioned, projectile fired');
+                log('info', 'Use arrow keys to move ship, spacebar to fire');
+                log('info', 'Hit the GREEN target for correct answers!');
+                
+            }, 1000);
+        }
+    </script>
+</body>
+</html> 

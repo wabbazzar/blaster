@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 400px; border: 1px solid #00ffff; }
+        #testResults { margin-top: 20px; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        button { background: #003366; color: #00ffff; border: 1px solid #00ffff; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Projectile Test Framework</h1>
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="testProjectileCreation()">Test Projectile Creation</button>
+        <button onclick="testProjectileMovement()">Test Projectile Movement</button>
+        <button onclick="testSpacebar()">Test Spacebar</button>
+        <button onclick="testMultipleProjectiles()">Test Multiple Projectiles</button>
+    </div>
+    
+    <div id="testResults">
+        <h2>Test Results:</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        console.log('Projectile test framework loaded');
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function getGameWindow() {
+            return document.getElementById('gameFrame').contentWindow;
+        }
+        
+        function log(pass, msg) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = pass ? 'pass' : 'fail';
+            div.textContent = (pass ? 'PASS: ' : 'FAIL: ') + msg;
+            results.appendChild(div);
+            console.log((pass ? 'PASS: ' : 'FAIL: ') + msg);
+        }
+        
+        // Wait for iframe to load
+        document.getElementById('gameFrame').onload = function() {
+            setTimeout(() => {
+                log(true, 'Game loaded, ready for projectile testing');
+            }, 100);
+        };
+        
+        function testProjectileCreation() {
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Count projectiles before
+            const beforeCount = gameDoc.querySelectorAll('.projectile').length;
+            
+            // Create projectile
+            gameWin.createProjectile();
+            
+            // Count projectiles after
+            const afterCount = gameDoc.querySelectorAll('.projectile').length;
+            log(afterCount === beforeCount + 1, 'Projectile created successfully');
+            
+            // Check projectile properties
+            const projectile = gameDoc.querySelector('.projectile');
+            if (projectile) {
+                log(projectile.style.width === '5px', 'Projectile width is 5px');
+                log(projectile.style.height === '10px', 'Projectile height is 10px');
+                log(projectile.style.background === 'rgb(0, 255, 255)', 'Projectile is cyan');
+                log(projectile.style.position === 'absolute', 'Projectile is absolutely positioned');
+            }
+        }
+        
+        function testProjectileMovement() {
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Create a projectile
+            gameWin.createProjectile();
+            
+            setTimeout(() => {
+                const projectile = gameDoc.querySelector('.projectile');
+                if (projectile) {
+                    const initialY = parseInt(projectile.style.bottom);
+                    
+                    setTimeout(() => {
+                        const newY = parseInt(projectile.style.bottom);
+                        log(newY > initialY, 'Projectile moves upward');
+                    }, 100);
+                }
+            }, 50);
+        }
+        
+        function testSpacebar() {
+            const gameDoc = getGameDoc();
+            
+            // Count projectiles before
+            const beforeCount = gameDoc.querySelectorAll('.projectile').length;
+            
+            // Simulate spacebar press
+            const spaceEvent = new KeyboardEvent('keydown', {key: ' '});
+            gameDoc.dispatchEvent(spaceEvent);
+            
+            setTimeout(() => {
+                const afterCount = gameDoc.querySelectorAll('.projectile').length;
+                log(afterCount > beforeCount, 'Spacebar creates projectile');
+            }, 50);
+        }
+        
+        function testMultipleProjectiles() {
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Create multiple projectiles
+            gameWin.createProjectile();
+            setTimeout(() => gameWin.createProjectile(), 100);
+            setTimeout(() => gameWin.createProjectile(), 200);
+            
+            setTimeout(() => {
+                const projectileCount = gameDoc.querySelectorAll('.projectile').length;
+                log(projectileCount >= 3, `Multiple projectiles exist (${projectileCount})`);
+            }, 300);
+        }
+    </script>
+</body>
+</html> 

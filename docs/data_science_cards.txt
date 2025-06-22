@@ -1,0 +1,445 @@
+Descriptive Analytics
+1. Measures of central tendency: mean, median, mode
+   1. Mean: sum(x_i)/N
+   2. Median: center datapoint of rank ordered data (average if there is a tie for center)
+   3. Mode: highest frequency observation
+2. Measures of spread: range, standard deviation, variance, mean absolute deviation  
+   1. Standard deviation: sqrt(sum(x_i - x_bar)^2 / N)
+   2. Range: max-min
+   3. Variance: std^2
+   4. Mean absolute deviation: sum(abs(x_i - x_bar)
+Unconstrained Continuous Optimization
+1. Maximize a continuous function: role of first derivative (dy/dx)
+2. Differentiation between maxima and minima: role of second derivative (d2y/dx2)
+3. Difference between local vs global extreme point: role of convexity
+   1. Jensen’s inequality: determines convexity, f((a+b)/2) <= (f(a) + f(b))/2 on the interval a, b in I
+Probability
+1. Calculate probability of union and intersection of multiple events: Unions are sums, intersections are products
+   1. Union, mutually exclusive: the probability of either of two mutually exclusive events occurring is the sum of their probabilities
+   2. Union, non-mutually exclusive: for non-mutually exclusive events you must subtract out the intersection (else you will double count)
+   3. Intersection: the probability of two events occurring together is the product of their probabilities
+2. When to use Bayes Theorem: Bayes theorem provides a model for investigating our beliefs, typically we solve for the posterior, which is the likelihood of our belief given the data. We can also use bayes theorem to compare priors or hypotheses, that is the likelihood of the observed data given a belief, when marginal likelihood is missing
+   1. Bayes theorem: p(a|b) = ( p(b|a) * p(a) ) / p(b) = p(a and b) / p(b) = posterior = (likelihood * prior) / marginal likelihood
+3. Difference between independent and uncorrelated random variables: independent means there is no relationship between the variables, uncorrelated means there is no linear relationship between the variables
+   1. Uncorrelated random variables: two random variables are uncorrelated when their correlation coefficient (usually pearsons) is 0
+   2. Independent random variables: two random variables are independent when their joint probability distribution is the product of their marginal probability distributions or equivalently when the conditional distribution is the same as the marginal distribution
+   3. pearson’s correlation: Cor(X,Y) = sum(x_i - x_bar)(y_i - y_bar)) / (sqrt(sum(x_i - x_bar)^2) sqrt(sum(y_i -y)^2)) ranges from -1 to 1
+4. Combinatorics: combinatorics involves counting in a finite and discrete system to obtain results, such as the probability of drawing 4 aces from a deck of cards
+
+
+Probability Distributions
+
+
+1. Compare PDF vs CDF: a CDF is the integral of a PDF
+   1. What is a PDF: the probability density function describes the infinitesimal probability of any given value; the probability that an event occurs in a given interval can be computed by taking the integral of the PDF over the interval
+   2. What is a CDF: the cumulative distribution function is the integral of the pdf, it evaluates the probability that an event will take on a value less than or equal to some value of a random value
+2. Difference between discrete and uniform random variables: uniform variables have an unlimited set of outcomes, discrete variables have a finite set of outcomes
+   1. Continuous (PDFs) (3): uniform, normal, exponential/memoryless
+      1. Uniform distribution (uniform): p(x) = 1/(b-a) for a<=x<=b
+      2. Properties of a normal distribution: 1) mean/mode/median are all equal. 2) data centered about the mean. 3) 99.7/95/68 % of data observed w/in 3/2/1 std of the mean
+      3. Exponential distribution: time between events in a poisson process (a memoryless property)
+      4. Memoryless property: a previous event gives no indication of the likelihood of the next event
+   2. Discrete (PMFs) (4): uniform, binomial, poisson, geometric
+      1. Uniform distribution (discrete): all values have 1/n probability
+      2. Binomial distribution: p(k) = (n choose k) p^k q^(n-k). where, n - number of trials, k - number of outcomes we care about, p - probability of success, q - probability of failure
+      3. Poisson distribution: describes probability of independent, discrete events occurring within a designated time. ex: calls received per day at a call center. the number of calls received at any minute have a poisson distribution
+      4. Geometric distribution: describes the probability of a number of successive failures before achieving a positive result in a Bernoulli trial (a trial that has only two possible outcomes). Requirements: a) only 2 outcomes. b) probability is the same for all trials (trials are independent). p(n) = (1-p)^(n-1) * p. Where n)  number of trials before success. p) probability of success
+3. What do mean and variance have in common: They are both expectations
+   1. Variance: the expected squared distance of each value from the expected (average) value. E[(E[X] - X)^2]
+   2. Mean: the weighted average value that the continuous random variable may take, weights provided by the PDF. E[X]
+   3. Covariance: the expected value of the product of the deviations from the individual expected values of two random variables. E[(Y-E[Y])(X-E[X])]
+4. Central limit theorem: if you sample from a dataset with replacement a sufficient number of times (n > 30)  then the distribution of the sample means will be normally distributed. works whether original population is skewed or not
+5. Law of large numbers: when n tends to infinity, the sample mean converges to the population mean
+
+
+Hypothesis Testing
+1. Population parameter vs sample statistic: a parameter is a number describing a population (e.g. pop mean) whereas a statistic is a number describing a sample of that population (e.g. sample mean)
+2. Null hypothesis vs confidence interval: the null hypothesis is centered around the null hypothesis parameter while the confidence interval is centered around our estimated sample parameter. If our null hypothesis falls within our confidence interval, then it will always be the case that we are more than 5% likely to observe our result under the null hypothesis
+3. How to interpret a CI: a confidence level of 95%, would say that if we were to repeat the sample calculation 100 times, 95 of those times the estimated population parameter would fall within the confidence interval
+4. Type 1 error: false positive, failing to accept the null hypothesis when it is true
+5. Type 2 error: false negative, failing to reject the null hypothesis when it is false
+6. p-value to a five year old: p-value stands for “probability value”, it indicates how likely it is that a result occurred by chance alone. it is the probability that the observed data occurred under the null hypothesis
+Regression
+1. Simple linear regression: predicts a quantitative response, Y, to a single input variable, X and the parameters are estimated by minimizing the residual sum of squares. RSS = sum((y_hat - y_i)^2)
+2. Two major assumptions of linear regression: additive and linear (note that there are 5+1 assumptions related to ordinary least squares)
+   1. additivity: the effect of changes in a predictor Xj do not change the effect of Xk on Y. to combat additive assumption, can produce an interaction term that is a combination of Xk Xj. Note that we should include Xk Xj in the model if their interaction term has a low p value
+   2. non-linearity in X and Y: X and Y have a non-linearity relationship. To combat non-linearity, you can engineer your features!
+3. 6 common problems with linear regression: 1. Non-linearity of the response-predictor relationships. 2. Correlation of error terms. 3. Non-constant variance of error terms. 4. Outliers. 5. High-leverage points. 6. Collinearity
+Forecasting
+1. Moving averages: a simple and common type of smoothing used in time series analysis and time series forecasting. Calculating a moving average involves creating a new series where the values are the average of raw observations in the original time series. The most simple model, choose a window and calculate the mean within that window to smooth the series and highlight overall trends; the longer the window the smoother the trend will be
+2. Autocorrelation: the similarity between observations as a function of the time lag between them.
+3. Seasonality: refers to periodic fluctuations. For example, electricity consumption is high during the day and low during night, or online sales increase during Christmas before slowing down again.
+4. ARIMA: a common time series model
+   1. (ARIMA) AR: Autoregression. A model that uses the dependent relationship between an observation and some number of lagged observations.
+   2. (ARIMA) I: Integrated. The use of differencing of raw observations (e.g. subtracting an observation from an observation at the previous time step) in order to make the time series stationary.
+   3. (ARIMA) MA: Moving Average. A model that uses the dependency between an observation and a residual error from a moving average model applied to lagged observations.
+   4. ARIMA(p,d,q): p - the number of lag observations; determine from autocorrelation plot. d - the number of times the raw observations are differenced; determine by looking at overall trend. q - the size of the moving average window
+In addition to the above topics all data scientists should be able to write technical documents with clarity. They should be able to translate business problems into data science problems. They will master a variety of languages (SQL, R or Python) and have the ability to design simple dashboards (Tableau, Power BI, D3, Plotly). It is not necessary that they have experience with “Big Data” tools such as Hadoop, Spark, MongoDB, or other Map Reduce offerings. Excel and/or SQL do not need to be in their core competencies. In short, they have at least one tool which they can efficiently do data manipulation and they have some breadth across other tools.
+In addition they are not required to know the following depth of probability topics:  probability of a probability, moment generating functions, exponential families, inequality results (e.g., Chebychev, Markov, Jensen); multivariate pdfs and cdfs, Jacobian transformation, determining the pdf of a transformation of a single or multiple random variables, knowledge of the theoretical relationships between various random variables (e.g., gamma with alpha=1 is an exponential distribution, gamma with alpha=p/2 and beta=2 is a chi-squared distribution, etc.).
+Depth in Statistics/Econometrics
+
+
+Data Analysis
+1. Frequent topics in data visualization (2): gestalt, data-ink ratio
+   1. GESTALT: deals with how people perceive something and how people see more than is there. Closure, proximity, continuation, figure and ground, similarity
+   2. Data-ink ratio: maximize the amount of "ink" used to represent the data and minimize the amount used to represent everything else
+2. Boxplots: non parametric plotting technique; 5-number summary of a dataset - min, max, q1, q2, median
+3. Scatterplots: use dots to represent data points for two different numeric variables
+4. Contingency table: tabular representation of categorical data (e.g. mood’s median, confusion matrix)
+5. Simpson’s paradox: a lurking, confounding variable leads to misinterpreting results, i.e. an association between two variables in a population emerges, disappears or reverses when the population is divided into subpopulations. ex; gender bias in grad school admissions, US elections based on pop. vote vs electoral votes
+6. Regression to the mean: extreme outcomes are followed by more moderate ones. ex; The Sports Illustrated jinx
+7. Data manipulation wide to long format conversions: pandas pivot, melt, stack, unstack
+   1. Pandas pivot: index, columns, values; turn what were previously rows to index/cols/vals
+   2. Pandas melt: create ‘tidy’ data move many column labels to values in a single column (id_vars are the unchanging columns)
+   3. Pandas stack: similar to melt however the columns become part of the multi-index
+   4. Pandas unstack: inverse operation of stack
+8. QQ-plots: graphically analyze two distributions by plotting their quantiles against each other. can identify fat/thin tails, right/left skew, and peaked data
+   1. QQ peaked data appears: above right side of parity line and below left side of parity line
+   2. QQ left skewed (tail on left) data appears: below left side of parity line
+   3. QQ right skewed (tail on right) data appears: above right side of parity line
+   4. QQ fat tail data appears: (same as peaked data) above right side of parity line and below left side of parity line
+   5. QQ thin tail data appears: above left side of parity line, below right side of parity line and to a much less extent compared to other deviations from normality
+9. Histogram: a graph that shows frequency distributions; observations that fall within predetermined bins are tallied and plotted as bars
+10. PCA: method of finding a low-dimensional representation of the dataset that captures as much information (variance) in the data as possible
+
+
+Not covered:  extensive Tukey EDA techniques, quality control charts.  
+Regression (Least Squares)
+1. Best Linear Unbiased Estimator: under certain conditions, the ordinary least squares (OLS) estimator of the coefficients of a linear regression model is the best linear unbiased estimator (BLUE), that is, the estimator that has the smallest variance among those that are unbiased and linear in the observed output variables
+2. OLS formula: OLS is a type of linear least squares method for estimating beta(s) in a linear model. beta_hat = (X^T X)^(-1) X^T y. 
+3. Gauss-Markov theorem relation to OLS: E[err|X] = 0 (no correlation of error terms), Var[err|X] = sig^2 (homoscedasticity of error terms) THEN the estimators are BLUE
+4. When is OLS the Maximum Likelihood Estimator: Conditions of BLUE + normally distributed errors
+5. OLS assumptions (2+4+1): linearity, 1) (Y/X have a linear relationship) and 2) there is no collinearity in X; errors are 1) mean of 0, 2) constant variance, 3) uncorrelated with themselves, 4) or other variables; optionally errors are normally distributed
+6. When is the OLS solution also the Maximum Likelihood Estimation: when the errors are normally distributed
+7. Use residual analysis to check: uncorrelated error terms, constant variance of error terms, mean of 0 in error terms, non-linearity of response-predictor relationships, outliers
+8. Confidence vs prediction interval: a prediction interval will always be wider than a confidence interval because it incorporates uncertainty from the regression estimate (reducible error) and uncertainty about the deviance of the particular data point to the solution surface (irreducible error)
+   1. Confidence intervals: quantify the uncertainty in the estimate f(x)
+   2. Prediction intervals: quantify the uncertainty around a particular estimate of y
+   3. sources of uncertainty (3): inherent randomness in the universe (ex quantum mechanics), inability to completely observe a phenomena, even when it is deterministic (ex observing crime) inability to perfectly model a phenomena (ex models predicting crime are simplifications)
+9. Transformations to reduce skew: log, square, box-cox
+10. Standardization: X’ = (X - X_bar) / X_std; creates equal scale between features (all will have 0 mean and unit variance)
+11. Confounding variables: variables that affect other variables in a way that produces spurious or distorted associations between two variables. Ex: students vs nonstudents, credit card debt, and probability of defaulting.
+   1. How to fix confounding variables: stratification, create multiple subgroups in which the confounding variables do not vary much and then test significance and strength of associations using chi square
+12. Interaction effect (additivity): occurs when the effect of one variable depends on the value of another variable. ex; radio and television spending on ads vs sales. Can be handled by adding interaction terms.
+13. Regression diagnostics (6 common problems): non-linearity of response-predictor relationship, correlated error terms, non-constant variance of error terms, outliers, high-leverage points, collinearity in predictors
+   1. Diagnosis for non-linearity of the response-predictor relationships: plot the residuals (observe there is no pattern)
+   2. Diagnosis for correlation of error terms: standard errors are predicated on no correlation of error terms. Extreme example, we double our data, n is now twice as large, and our confidence intervals narrower by a factor of sqrt(2)! A frequent problem in time series data. Plot residuals as a function of time (observe there is no pattern)
+   3. Diagnosis for non-constant variance of error terms (heteroscedasticity): standard errors, hypothesis tests, and confidence intervals rely on this assumption, a funnel shape in the residuals indicates heteroscedasticity
+      1. How to fix heteroscedasticity: can transform (log⁡y)
+   4. Diagnosis for outliers: unusual values in response variable, check residual plot 
+      1. How to fix outliers: potentially remove datapoint
+   5. Diagnosis for high-leverage points: unusual values in predictor variable, will bias the least squares line, problem can be hard to observe in multilinear regression (when a combination of predictors accounts for the leverage)
+   6. Diagnosis for collinearity: refers to when two or more variables are closely related to one another, reduces the accuracy of estimates for coefficients, increases standard error of estimates for coefficients. it then reduces the t-statistic and may result in type-2 error, false negative. This means it reduces the power of the hypothesis test, the probability of correctly detecting a non-zero coefficient, detect by looking at the correlation matrix of variables
+      1. how to fix collinearity: for multicollinearity compute the variance inflation factor (VIF), 1/(1−R2) where the regression is performed against the indicated predictor across all other predictors, remove features with a VIF above 5-10
+      2. sources of type II error in OLS: multicollinearity
+14. Hypothesis tests in regression modeling: F-test, t-test, and z-test can all be used depending on the type of regression model
+   1. hypothesis test for multivariate: F-test, ((TSS - RSS)/p) / (RSS/(n-p-1))
+   2. hypothesis test  for univariate: t-test, (beta-0)/SE(beta), measures how many standard deviations beta is from 0
+   3. hypothesis test for logistic regression: z-test
+15. Stepwise variable selection methods (3): forward selection, backward selection, and mixed selection
+   1. Forward selection: start with an intercept model. Add a single variable, keep the one that results in the lowest RSS. Repeat. Can always be used no matter how large p is. This is also a greedy approach.
+   2. Backward selection: start with all predictors in the model. Remove the predictor with the largest p-value. Stop when all p-values are below some threshold. Can't be used if p > n.
+   3. Mixed selection: a combination of 1 and 2. start with an intercept model. continue as in 1 accept now, if any predictor p-value rises above some threshold, remove that predictor. This approach counteracts some of the greediness of approach 1.
+16. Logistic regression function vs linear regression: we estimate parameters for the function p(x) = (exp(b0+b1X)) / (1 + exp(b0+b1X)), note the occurrence of the linear terms, maps output from 0 to 1, unlike linear regression
+   1. estimation of the parameters for logistic regression: is done using maximum likelihood
+   2. the odds: p(x) / (1 - p(x)) is called the odds, p(x) / (1 - p(x))  = exp(b0+b1X), taking the log we arrive at the logit or log-odds; which is linear for logistic regression
+   3. multinomial logistic regression: an extension to logistic regression to handle multiple classes; the logistic function is replaced with a softmax function, p(yi = k|X) = (exp(B_x x_i)) / ( sum_i_K ( exp(B_j x_i) ))
+KNN
+1. what are some enhancements to standard KNN: Kernel methods, which can decrease weights smoothly rather than 0/1 and in high dimensional spaces emphasize some variables more than others
+2. explain the curse of dimensionality as it relates to KNN: in 10 dimensions, capturing 10% of the data in a local neighborhood would require sampling along 80% of each dimension, such sampling is no longer local. Additionally, sampling density is proportional to N^(1/p) where N is the sample size and p the dimensions so if N=100 represents a dense sample size for a single dimensional problem then that same density for a 10 dimensional problem would be 100^10
+KNN vs Regression
+17. KNN vs linear regression: KNN assumes no functional form (it is non-parametric), making it more flexible. linear regression is more stable (makes huge assumptions about form) but may be inaccurate, KNN makes very mild structure assumptions but may be unstable
+18. When will linear regression out perform KNN: the parametric approach will outperform the non-parametric approach if the parametric form that has been selected is close to the true form of f. In these cases, the KNN model’s increase cost in variance is not offset by a reduction in bias
+19. when will parametric methods outperform non-parametric methods: when there is a small number of observations per predictor
+20. Weighted least squares: a generalization of OLS in which knowledge of the variance of observations is incorporated into the regression
+21. Regression methods for repeated measures or longitudinal data: fixed effects and random effects models
+   1. difficulty of longitudinal statistical analysis: Statistical analysis of longitudinal data requires methods that can properly account for the intra-subject correlation of response measurements. If such correlation is ignored then inferences such as statistical tests or confidence intervals can be grossly invalid
+   2. Fixed effects vs random effects model: supports prediction about only the levels/categories of features used for training. A random-effects model, by contrast, allows predicting something about the population from which the sample is drawn
+
+
+Not covered: generalized estimating equations, advanced methods for handling missing data, discrete choice models, in depth understanding of the effect of various model assumptions on corresponding theoretical results (e.g., theoretical questions more appropriate for RS), survival analysis, details of fixed effects and random effects estimators.  
+Traditional ML
+3. supervised learning: for every observation we have some feature values and some target vector or tensor. we use both to train a model that takes in some x values and outputs a predicted value
+4. unsupervised learning: we only have features and do not have a target this makes the estimation problem more difficult. when possible, use supervised learning
+5. bias-variance tradeoff equation: bias^2 + variance + irreducible error = total error
+   1. Bias: is the expected error created by using a model to approximate a real world function/relationship, bias[y_hat] = E[y_hat - yi], bias is how much predicted values differ from true values, associated with underfitting
+   2. variance: E[y_hat - E[y_hat]]^2, how predictions made on the same value vary on different realizations of the model, associated with overfitting
+   3. learning curves: visualizes the effect of the number of observations on the performance metric, usually plotted as performance metric vs number of observations (or complexity), if complexity is on X test set will diminish in performance (r2) after a point, if training dataset size is on X test set will plateau in performance after a point
+   4. model complexity relation to bias-variance: more complex - loss due to bias will deplete; less complex loss due to variance will deplete; sweet spot is somewhere in the middle (total loss is minimized)
+   5. avoid overfitting (high variance) (5): simplify model, cross-validate model, regularize model, get more data, use ensemble learning
+   6. avoid under fitting: a model is underfit when it fails to capture the pattern in the data. it suffers from high bias
+   7. Strategies for high variance, forms of regularization (5): 1) weight decay, 2) dropout and early stopping, 3) bagging, 4) L1 and L2, 5) data augmentation, 
+   8. Curse of dimensionality: sparse data spread over multiple dimensions, each data point is relatively far away from other data points.
+      1. Fix curse of dimensionality (3): 1) gather more data, 2) feature selection, 3) dimensionality reduction
+      2. sparsity: the portion of a matrix’s elements that are zeros. sparsity = # of zeros / # of total elements
+6. k-fold cross validation overview: 10 folds is common - avoids leaking test set into model training; loss can be mse, log-loss, accuracy, etc. CV_k = 1/k sum(loss) i to k
+7. Logistic regression function: we estimate parameters for the function p(x) = (exp(b0+b1X)) / (1 + exp(b0+b1X)), note the occurrence of the linear terms, maps output from 0 to 1, unlike linear regression
+   1. estimation of the parameters for logistic regression: is done using maximum likelihood, the loss function is known as log-loss (if more than two classes exist softmax regression is typically used)
+   2. the odds: p(x) / (1 - p(x)) is called the odds, p(x) / (1 - p(x))  = exp(b0+b1X), taking the log we arrive at the logit or log-odds; which is linear for logistic regression
+   3. multinomial logistic regression: an extension to logistic regression to handle multiple classes; the logistic function is replaced with a softmax function, p(yi = k|X) = (exp(B_x x_i)) / ( sum_i_K ( exp(B_j x_i) ))
+   4. logistic regression pitfalls: high bias; poor under collinear features. Can feature engineer to combat!
+   5. Strategies for highly imbalanced classes: undersample, oversample, stratify
+8. Confusion matrix: visualize the accuracy of a classifier by comparing the true and predicted classes. off-diagonal squares are incorrect predictions
+   1. recall: is about the real positives - TP / (TP + FN) , recall is the ability of the classifier to find positive examples. If we wanted to be certain to find all positive examples, we could maximize recall
+   2. f1 score: (2 * precision * recall ) / (precision + recall), f1 score is the harmonic mean of precision and recall. Values range from 0 (bad) to 1 (good)
+   3. AUC: area under the curve - the receiver operating characteristic (ROC) curve represents the true positive rate and false positive rate for all probability thresholds of a binary classifier. The AUC evaluates the overall quality of the model. More AUC, the better. X; false positive rate, Y; true positive rate
+9. Bag of words: converts text to a matrix where every row is an observation and every feature is a unique word. The value of each element in the matrix is either a binary indicator marking the presence of that word or an integer of the number of times that word appears
+   1. Stemming: trim words to root; ex likes, liked to like
+   2. Lemmatization: stemming + context/meaning taken into account; ex caring because care instead of car
+   3. N-grams: an extension of bag-of-words where we use N words in a sequence
+   4. Word embeddings: words become vectors with meaning; ex Word2Vec
+10. Boosting: an ensemble learning strategy that trains a series of weak models, each one attempting to correctly predict the observations the previous model got wrong
+11. Bagging: bootstrap aggregation; bootstrap dataset, create many models (stumps) vote on final output
+   1. Bagging vs dropout: models - in bagging, all models are independent, in dropout subnetworks share parameters; training - in bagging, all models are trained, in dropout only a fraction of possible subnetworks are trained
+   2. The random in random forest: each tree gets a random sample of observations with replacement, each tree gets all features, but at each node only a subset of those features are available
+   3. Decision tree loss functions: either gini or entropy
+   4. Gini (decision trees): gini = 1 - sum (p_j^2) where p_j is the probability of class j; measures the frequency at which any element of the dataset will be mislabelled when it is randomly labeled; ranges 0-0.5; the optimum feature is chosen for which the resultant gini index is lowest
+   5. Entropy (decision trees): entropy = - sum (p_j log (p_j)); where p_j is the probability of class j; range 0 to 1
+   6. Gini vs entropy: calculation of the gini index will be faster since it does not use logs
+   7. AdaBoost vs XGBoost: in AdaBoost data points are weighted based on whether they were previously misclassified and resultant weak learners are weighted in the final output, in XGBoost the gradient is used to penalize weak data points rather than their weight and all models have equal weights in the final output
+12. Regularization: a variety of techniques used to improve generalizability by changing the learning algorithm to improve performance on the test error, regardless of the effect on the training error, ex; weight decay, drop-out, ridge regression, lasso regression
+   1. L1 Regularization: lasso, sum absolute value of beta
+   2. L2 Regularization: ridge, sum square value of beta
+13. uses of clustering: find hidden groupings in data (customer segmentation) visualization and outlier detection (fraud detection)
+   1. k-means clustering: 1) k centerpoints are randomly initialized, 2) observations are assigned to the closest centerpoint, 3) centerpoints are moved to the center of their members, 4) repeat steps 2 and 3 until no observation changes membership in step 2 
+   2. distance measures: distortion, inertia silhouette, and calinski harabasz
+      1. distortion: average squared distance (euclidean) of samples to their cluster centers, distortion is the loss function for k-means; sum_j_to_k (sum_x_in_j (( x_i - mu_j ) ^2)) where k is the number of clusters, and mu is the cluster center
+      2. inertia: sum of squared distances of samples to their closest center
+      3. silhouette: inter vs intra (of nearest) cluster distance; 1 (best) to -1 (worst), Sc = (1/n) sum( (bi-ai) / max(ai, bi) ), where ai is the mean distance between sample i and all other samples in the same class; bi is the mean distance between a sample and all other samples of the nearest cluster; n is the number of observations
+      4. calinski harabasz: inter vs intra cluster variance; higher is better
+   3. K-means vs GMMs: GMMs are more flexible since they take into account mean + variance (rather than only mean); can be better for lower dimensional data or where there are different cluster shapes
+14. SVM: supervised learning technique that aims to maximize the margins between classes; support vectors describe the edges of the margins
+   1. SVC: support vector classifier - finds the linear hyperplane that separates classes with the maximum margin
+   2. SVM kernel trick: use a kernel to transform data into a higher dimensional space, where it then finds the hyperplane that best separates the points.
+   3. SVM kernels: RBF (radial basis function) and gaussian kernels
+   4. SVM relation to ridge regression: SVM modifies the loss function employed in ridge regression, can be thought of as a kernalized form of ridge regression
+   5. SVMs work well: in high dimensional spaces; don’t perform well in huge datasets or when there is a lot of overlap between classes; don’t have simple to understand outputs (not interpretable) 
+15. Concave: every chord is below the function except the endpoints
+16. Convex: every chord is above the function except the endpoints
+17. KNN tips: k is the number of neighbors to consider, scaling is important, k should be odd
+   1. KNN with binary features: we can use hamming distance (try a variety of distance metrics)
+   2. KNN weighting variation: voting can be weighted by distance to each neighbor
+   3. KNN downside: does not scale to large data well
+18. regression losses: MSE (L2 loss), MAE (L1 loss)
+   1. MSE  (quadratic loss, L2 loss): predictions which are far away from actual values are penalized heavily in comparison to less deviated predictions; square makes it easier to calculate gradients
+   2. MAE (L1 loss): needs more complex tools to calculate gradients (linear programming). more robust to outliers since is does not make use of a square
+19. classification losses: cross entropy loss/negative log likelihood
+   1. cross entropy loss/negative log likelihood: most common for classification problems, - (yi log(y_hat) + (1-yi)log(1-y_hat)), when yi = 1 second half of function disappears; y1 = 0 first half of function disappears, core aspect - penalizes heavily predictions that are confident but wrong
+   2. Cross entropy: Cross-entropy is a measure of the difference between two probability distributions for a given random variable or set of events, cross-entropy builds upon the idea of entropy from information theory and calculates the number of bits required to represent or transmit an average event from one distribution compared to another distribution
+   3. Cross-entropy can be calculated as: Cross-entropy can be calculated using the probabilities of the events from P and Q, as follows, H(P, Q) = – sum x in X P(x) * log(Q(x)) Where P(x) is the probability of the event x in P, Q(x) is the probability of event x in Q and log is the base-2 logarithm
+   4. Entropy: Entropy is the number of bits required to transmit a randomly selected event from a probability distribution. A skewed distribution has a low entropy, whereas a distribution where events have equal probability has a larger entropy
+   5. Entropy H(x) can be calculated as: Entropy for a random variable with a set of x in X discrete states discrete states and their probability P(x) is as follows, H(X) = – sum x in X P(x) * log(P(x))
+   6. Information: Information h(x) can be calculated for an event x, given the probability of the event P(x) as follows, h(x) = -log(P(x)) , the more unlikely, the greater the amount of information (surprise and more bits)
+
+
+Not covered: Fine level details of optimization algorithms (e.g., gradient descent, coordinate descents)
+
+
+Estimation and Hypothesis Testing
+1. Frequentist sampling concepts 
+2. Simple random sample (SRS) definition
+3. Properties of estimators, bias and variance
+4. Power
+5. Confidence interval interpretation 
+6. Multiple testing issues (familywise error, Bonferroni, FDR)
+7. One-sample versus two-sample hypothesis testing, paired versus unpaired data tests
+   1. t-statistic: number of standard deviation sa parameter is away from a constant; t = beta - constant (usually 0) / standard error of beta
+8. Test for proportions versus tests for population mean (tweak)
+9. Chi-squared tests for contingency tables
+10. Basics of maximum likelihood estimation 
+11. Basic bootstrap methods to obtain confidence intervals (e.g., percentile method)
+12. Tests for equal variance
+13. ANOVA concepts 
+14. Likelihood ratio test
+15. Choosing which test
+   1. which hyp test, quantitative predictor + quantitive outcome: simple or multiple linear regression
+   2. which hyp test, quantitative predictor + categorical outcome: logistic regression
+   3. which hyp test, categorical predictor + categorical outcome: non-parametric test (chi-square test)
+   4. which hyp test, categorical predictor + quantitative outcome + 2 groups: T-test 
+   5. which hyp test, categorical predictor + quantitative outcome + >2 groups: ANOVA
+Not covered: major theorems from hypothesis testing, Fisher information, variance of MLE, knowledge of difference in performance between various bootstrap methods, robust statistical methods for univariate and multi-variable analysis, sufficient statistics, ancilliartiy, Bayesian computational methods such as Gibbs sampling or MCMC.  
+
+
+Experiments:
+1. Knowledge of different types of bias (selection, nonresponse, misreporting)
+   1. selection bias: data are biased due to the way they were collected (ex class imbalance)
+   2. omitted variable bias: important variables are omitted
+2. Correlation vs causation 
+3. Benefits of randomization
+4. Multiple testing issues
+Not covered: mathematical exposition of how randomization yields unbiased treatment effect estimate, Neyman-Rubin potential outcomes framework, Judea Pearl graphical causal framework, Rubin propensity score
+
+
+
+
+Causal Inference:
+1. Randomized control trials
+2. What is a treatment effect? SATE, SATT, SATC, selection problem
+3. What is endogeneity and what are classical examples of regression with endogenous variables?
+4. Difference-in-Difference method
+5. Regression Discontinuity Design
+6. Instrumental variables
+7. Synthetic Controls
+8. Matching methods, including propensity score matching
+
+
+Time Series Analysis:
+1. Why not standard regression in time series setting?
+2. Understanding of integrated processes and cointegrated processes
+3. Univariate time series methods
+4. Multivariate time series methods
+5. Understanding stationarity and tests for unit roots
+6. AR, MA, ARMA, ARIMA and VAR
+
+
+
+
+Depth in Operations Research
+
+
+Linear Programming:
+1. Familiarity with Simplex
+2. Good knowledge of Duality
+3. Basic Integer Programming models
+
+
+Nonlinear Programming:
+1. Knowledge of Network flows models
+2. Familiarity with KKT
+
+
+Intermediate Probability:
+1. Ability to use indicator variables and leveraging their properties
+2. Comfortable working with conditional probabilities and conditional expectation
+
+
+Basic Queueing Knowledge:
+1. Little’s Law
+2. Talk about M/M/1 queue and model a real-world problem as a queuing system
+
+
+Knowledge of Markov Chains:
+1. Ability to talk about transition probabilities and model a real-world problem amenable to such setting
+
+
+Basic Forecasting Models: 
+1. Moving Average/Exponential Smoothing
+2. Incorporate Seasonality 
+
+
+Decision Making under Uncertainty:
+1. Ability to formulate a decision problem in a stochastic setting which is amenable to minimizing a smooth function and use their optimization knowledge to solve it.
+
+
+
+
+Additional ML
+1. Gradient descent: w’ = w + grad w; -eta grad loss(W) where eta is the learning rate, loss comes from the loss function operating on the weight/parameter
+2. no free lunch theorem: imagine every possible underlying data generating distribution; imagine we train every machine learning algorithm on every one of those distributions; on average every algorithm will have the same test error. Intuition - there is no one best machine learning algorithm
+3. error metrics
+   1. standard error of the mean: the standard deviation of the sample mean. estimated by dividing the sample standard deviation by the square root of the number of observations. SEM = s /sqrt(n)
+   2. true positive rate: true positives / (true positives + false negatives)
+4. naive bayes: uses Baye’s rule and a set of conditional independence assumptions in order to learn P(X|Y)
+   1. naive bayes assumptions (2): features are independent of each other (conditional independence assumption) (if grossly invalid separation boundaries become nonlinear), equal weight of each feature
+   2. naive bayes ex: using words in email to classify as spam (most words are independent of one another), use naive bayes where speed is desirable
+5. end-to-end modeling (10 steps): (BACKGROUND 3) clarify and constrain, establish metrics, understand data sources, (PREPARE 3) EDA, clean, engineer features, (MODEL 3) select model, train/evaluate, deploy, iterate
+   1. Feature engineering tactics:  transformations, binning, dimensionality reduction, additivity, (for categorical; one-hot encoding, hashing) (for NLP stemming/lemmatization, bag-of-words/N-grams/embeddings) 
+   2. Model selection considerations 4+2): speed, budget, dimensionality, explainability, un/supervised, classification/regression
+Deep Learning
+1. motivation for deep learning
+2. activation functions
+   1. logistic (sigmoid): 1 / (1 + exp(-z)); classification output
+   2. softmax
+   3. relu: max(0, f(x)); multi-layer NN
+   4. leaky relu
+   5. threshold activation
+3. back prop: the learning process for neural networks; involves modification of weights based on differences between predicted and expected values
+4. loss functions: MSE (regression), cross-entropy (classification) 
+5. vanishing/exploding gradients: vanishing gradient happens when the gradient in the weights calculation is too small to reach convergence; exploding gradients is the opposite problem. Can be alleviated by changing the activation functions (ex tanh to relu) or modifying the architecture (ex residual neural nets) or normalization techniques (ex batch norm) or proper initialization of weights (uniform normal logits)
+6. training optimization: using momentum (previous gradients influence step size)
+7. transfer learning examples: BERT for language models, ImageNet for image classification
+8. transfer learning: involves using pretrained weights on a smaller set of data
+9. addressing overfitting: normalizing features, batch norm, dropout
+10. batch norm: normalizing outputs of each internal node (increases speed, reduces overfitting)
+11. what are the pros and cons of batch norm: con, the elements of a batch are mathematically made to associate with each other as they are used to calculate the shift in mean and scale in variance, this is undesirable because these values were randomly assigned to the batch to begin with. pro, it becomes a useful regularization of the network because by the same token, the shift/scale that was added to the batch acts as a bit of noise s.t. no one training example bears too much weight
+12. dropout: randomly drop weights within the network
+13. CNNs: leverage spatial dependence
+14. RNNs: leverage sequential dependence
+15. LSTMs: add long term memory to RNNs
+16. why do we often use negative log probability for the loss of a model: 1, MLE, minimizing the log loss is the same as maximizing the likelihood, ie maximizing the case of observing the data, given the model. 2, differentiability. 3, interpretability. 4, stability (ie avoid exploding/vanishing gradients. 5, cross entropy, cross entropy reduces the negative log probability in binary classification or multi class classification with one true outcome
+17. what is the difference between negative log likelihood and cross entropy: negative log probability is calculated for the probability assigned to the true class label, Cross-entropy is a more general concept that measures the dissimilarity between two probability distributions
+18. what is a dead neuron: a neuron that fails to activate under any of the training data. can be due to improper weight initialization, saturated activation functions or too great of learning rate. in addition to checking those sources, batch normalization can help mitigate dead neurons by keeping activations in a suitable range
+Transformers
+1. what are keys, queries, and values in a self attention block: keys, queries, and values are each a linear layer with dimensions of embedding * attention_head with input from x (B,T,C). e.g., key=nn.Linear(n_embed, attention_head, bias=False) and x = nn.randn(batch, time, n_embed). An attention head uses the queries and keys to determine where in the sequence of data the current target would like to “listen”. 
+2. in self attention, why are position embeddings done alongside token embeddings: the self attention mechanism has no notion of position, it listens to all proceeding positions (masked/unidirectional/GPT) or all positions (unmasked/bidirectional/BERT) with a learned attention (keys/queries) so by default it does not know the positions. This must be added back in using the position embeddings
+3. what additional optimization strategies were (re)introduced in the seminal attention is all you need paper: residual connections (x = x + multiHead(x)), layer norm (normalize on rows (layer) instead of columns (batches)), multi head attention (like group convolutions, individual heads are processed in parallel and added together)
+4. what is the difference between cross and self attention: self attention only takes q,k,v from a single encoding whereas cross attention can take q,k,v from another encoded block as in an encoder feeding into a decoder
+5. why did the original attention paper have an encoder: because the attention paper was used in a translation setting. The encoder was unmasked and fed the original to-be-translated text and used to condition the decoder, which was trained on a special start/stop tokens and the target translation
+Python
+Data Structures and Algorithms
+* What is a dictionary: works like a hash table. A collection of key, value pairs.
+* What is an array: An array is a contiguous area of memory. This contiguous area contains elements of equal size. These elements are indexed by contiguous integers.
+* What is the speed of accessing a key in a dictionary: O(1)
+* What are the different algorithm families (5): greedy, divide and conquer, backtracking, branch and bound, dynamic programming
+
+
+lists 
+1. list.append(): Adds an element at the end of the list
+2. list.clear(): Removes all the elements from the list
+3. list.copy(): Returns a copy of the list
+4. list.count(): Returns the number of elements with the specified value
+5. list.extend(): Add the elements of a list (or any iterable), to the end of the current list
+6. list.index(): Returns the index of the first element with the specified value
+7. list.insert(): Adds an element at the specified position
+8. list.pop(): Removes the element at the specified position
+9. list.remove(): Removes the first item with the specified value
+10. list.reverse(): Reverses the order of the list
+11. list.sort(): Sorts the list
+sets: only contain unique values
+System Design
+
+
+* Steps for scoping a system (6): 1) clarification of requirements; what are the features, what will be the content, is this front and back end. 2) back of envelope; what are the refresh rates, how many users, how do they interact with one another, how much storage/bandwidth. 3) system interface definition; what are the actual APIs. 4) data model definition; what are the data objects passed around, this will feed into partitioning and management. ex; pation_obj; first, last, yob, test_1, … should we use a sql or nosql db system, block storage for photos/videos etc 5) high level design; client -> load balancer -> app servers -> (DB, file storage). 6) detailed design;
+* Identify bottlenecks: Is there any single point of failure in our system? What are we doing to mitigate it? Do we have enough replicas of the data so that we can still serve our users if we lose a few servers? Similarly, do we have enough copies of different services running such that a few failures will not cause a total system shutdown? How are we monitoring the performance of our service? Do we get alerts whenever critical components fail or their performance degrades?
+* clarification of requirements: functional (what does our service DO) vs non functional (speed, availability, analytics)
+* back of envelope: start with traffic estimates per month, then translate to queries per second (QPS). estimate storage; content per month x months x years x object_zize = total storage req. ex 500 M x 12 mo x 5 yrs = 30 billion. 30 B x 500 bytes = 15 TB. bandwidth estimates. memory estimates
+SQL
+1. CREATE TABLE: creates a table in a relational database and depending on what database you use can also be used to define the table’s schema
+2. INSERT: inserts a row (or set of rows) into a table
+3. UPDATE: modifies already existing data
+4. DELETE: removes a row or a group of rows from a database
+5. SELECT: selects certain columns from a table
+6. GROUP BY: groups rows having the contents of a specific column or set of columns
+7. WHERE: provides a condition on which to filter before any grouping is applied
+8. HAVING: provides a condition on which to filter after any grouping is applied
+9. ORDER BY: sorts results in ascending or descending order according to the contents of a specific column or set of columns
+10. DISTINCT: returns only distinct values
+11. UNION: combines results from multiple select statements
+12. INNER JOIN: default type of join, do not include rows with null values
+13. OUTER JOIN: join, keep all rows
+14. LEFT JOIN: do not include rows where there would be a null on the left columns; no data loss on left table
+15. RIGHT JOIN: do not include rows where there would be a null on the right columns; no data loss on right table
+16. RLIKE ^: beginning of word
+17. RLIKE *: repeat previous character
+18. RLIKE []: any within
+19. RLIKE [aeiouAEIOU]: any vowel
+20. RLIKE .: wildcard
+21. RlIKE $: end of word
+22. ROUND: ROUND(value, decimals)
+23. MIN: minimum
+24. MAX: maximum
+25. ABS: absolute value
+26. SQRT: square root
+27. POWER: POWER(value, exponent)
+28. CASE: CASE WHEN <condition> THEN “value” ELSE “value” END; goes after SELECT command and before FROM command
+29. REPLACE: REPLACE(column, “org. value”, “replaced value”)
+30. CEILING: return the smallest integer value that is greater than or equal to a number
+31. COUNT: return the number of rows that match a specified condition
+32. CONCAT: CONCAT(item1, item2, item3) concatenate into a string
+33. LEFT: LEFT(str, number of values) extract number-of-values from the left side of string
+34. RIGHT: RIGHT(str (or column), number of values) extract number-of-values from the right side of string
+35. LOWER: change string to all lower case
+36. FLOOR: return the largest integer value that is equal to or less than a number
+37. CTE: common table expression (can be used instead of a subquery); with <alias> as (<query>), <alias> as (<query>) SELECT … remember you must join the aliases with the target table in order to use them in case or where clauses
+38. ROW_NUMBER: a window function or analytic function that assigns a sequential number to each row in the result set. The first number begins with one. ROW_NUMBER() OVER (<partition_definition> <order_definition>)
+39. partition_definition: PARTITION BY <expression>,[{,<expression>}...]. The PARTITION BY clause breaks the rows into smaller sets. The expression can be any valid expression that would be used in the GROUP BY clause. It’s possible to use multiple expressions separated by a comma (,).

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Target Bug Detection Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 500px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .warning { color: #ffff00; }
+        button { background: #003366; color: #00ffff; border: 1px solid #00ffff; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Target Bug Detection Test</h1>
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="testTargetPositions()">Test Target Positions</button>
+        <button onclick="testTargetSpacing()">Test Target Spacing</button>
+        <button onclick="testTargetBoundaries()">Test Target Boundaries</button>
+        <button onclick="testTargetTiming()">Test Target Timing</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(type, msg) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${type.toUpperCase()}: ${msg}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`${type.toUpperCase()}: ${msg}`);
+        }
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function getGameWindow() {
+            return document.getElementById('gameFrame').contentWindow;
+        }
+        
+        function testTargetPositions() {
+            log('warning', '=== Testing Target Positions ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const targets = gameDoc.querySelectorAll('.target');
+                log('warning', `Found ${targets.length} targets`);
+                
+                if (targets.length === 0) {
+                    log('fail', 'No targets found to test');
+                    return;
+                }
+                
+                const positions = [];
+                targets.forEach((target, index) => {
+                    const left = parseInt(target.style.left);
+                    const top = parseInt(target.style.top);
+                    positions.push({index, left, top});
+                    log('warning', `Target ${index}: left=${left}px, top=${top}px`);
+                });
+                
+                // Check for clustering (targets too close together)
+                let clustered = 0;
+                for (let i = 0; i < positions.length; i++) {
+                    for (let j = i + 1; j < positions.length; j++) {
+                        const distance = Math.sqrt(
+                            Math.pow(positions[i].left - positions[j].left, 2) +
+                            Math.pow(positions[i].top - positions[j].top, 2)
+                        );
+                        if (distance < 100) { // Less than 100px apart
+                            clustered++;
+                            log('fail', `Targets ${i} and ${j} are clustered (distance: ${distance.toFixed(1)}px)`);
+                        }
+                    }
+                }
+                
+                if (clustered === 0) {
+                    log('pass', 'No target clustering detected');
+                } else {
+                    log('fail', `${clustered} clustered target pairs found`);
+                }
+                
+            }, 1000);
+        }
+        
+        function testTargetSpacing() {
+            log('warning', '=== Testing Target Spacing ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const targets = gameDoc.querySelectorAll('.target');
+                const yPositions = [];
+                
+                targets.forEach((target, index) => {
+                    const top = parseInt(target.style.top);
+                    yPositions.push(top);
+                });
+                
+                // Check if all targets have same Y position (simultaneous spawn)
+                const uniqueY = [...new Set(yPositions)];
+                if (uniqueY.length === 1 && targets.length > 1) {
+                    log('fail', `All ${targets.length} targets spawned at same Y position: ${uniqueY[0]}px`);
+                } else if (uniqueY.length > 1) {
+                    log('pass', `Targets have varied Y positions: ${uniqueY.join(', ')}px`);
+                } else {
+                    log('warning', 'Only one target found, cannot test spacing');
+                }
+                
+                // Check Y position distribution
+                yPositions.forEach((y, index) => {
+                    if (y > 0) {
+                        log('fail', `Target ${index} starts below screen top (Y: ${y}px)`);
+                    } else {
+                        log('pass', `Target ${index} starts above screen (Y: ${y}px)`);
+                    }
+                });
+                
+            }, 1000);
+        }
+        
+        function testTargetBoundaries() {
+            log('warning', '=== Testing Target Boundaries ===');
+            const gameDoc = getGameDoc();
+            const gameBoard = gameDoc.getElementById('gameBoard');
+            
+            setTimeout(() => {
+                const targets = gameDoc.querySelectorAll('.target');
+                const boardWidth = gameBoard.offsetWidth;
+                
+                targets.forEach((target, index) => {
+                    const left = parseInt(target.style.left);
+                    const width = target.offsetWidth;
+                    const right = left + width;
+                    
+                    log('warning', `Target ${index}: left=${left}px, width=${width}px, right=${right}px, board=${boardWidth}px`);
+                    
+                    if (left < 0) {
+                        log('fail', `Target ${index} extends left of game board (left: ${left}px)`);
+                    } else if (right > boardWidth) {
+                        log('fail', `Target ${index} extends right of game board (right: ${right}px > ${boardWidth}px)`);
+                    } else {
+                        log('pass', `Target ${index} is within game board boundaries`);
+                    }
+                });
+                
+            }, 1000);
+        }
+        
+        function testTargetTiming() {
+            log('warning', '=== Testing Target Timing ===');
+            const gameWin = getGameWindow();
+            const gameDoc = getGameDoc();
+            
+            // Force create new question to spawn targets
+            if (gameWin.loadNewQuestion) {
+                gameWin.loadNewQuestion();
+            }
+            
+            // Monitor target creation over time
+            let targetCount = 0;
+            let spawnTimes = [];
+            
+            const checkTargets = () => {
+                const currentTargets = gameDoc.querySelectorAll('.target').length;
+                if (currentTargets > targetCount) {
+                    spawnTimes.push(Date.now());
+                    log('warning', `Target spawned at ${Date.now()}, total: ${currentTargets}`);
+                    targetCount = currentTargets;
+                }
+            };
+            
+            // Check every 100ms for 3 seconds
+            const interval = setInterval(checkTargets, 100);
+            setTimeout(() => {
+                clearInterval(interval);
+                
+                if (spawnTimes.length <= 1) {
+                    log('fail', 'All targets spawned simultaneously or no spawning detected');
+                } else {
+                    const timeDiffs = [];
+                    for (let i = 1; i < spawnTimes.length; i++) {
+                        timeDiffs.push(spawnTimes[i] - spawnTimes[i-1]);
+                    }
+                    log('pass', `Targets spawned with delays: ${timeDiffs.join(', ')}ms`);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

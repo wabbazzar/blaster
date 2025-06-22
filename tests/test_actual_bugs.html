@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actual Bug Detection Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 600px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .warning { color: #ffff00; }
+        .info { color: #00ffff; }
+        button { 
+            background: #003366; 
+            color: #00ffff; 
+            border: 1px solid #00ffff; 
+            padding: 10px; 
+            margin: 5px; 
+            cursor: pointer;
+        }
+        #results { 
+            max-height: 400px; 
+            overflow-y: auto; 
+            border: 1px solid #00ffff; 
+            padding: 10px; 
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Actual Bug Detection Test</h1>
+    <p>Testing for the specific bugs reported:</p>
+    <ul>
+        <li>0. Targets appearing above scoreboard (should be in game board)</li>
+        <li>1. Targets freeze for a second when hit (looks sloppy)</li>
+        <li>2. Game doesn't progress when no targets are hit</li>
+        <li>3. Definition should be in top box, term in correct answer</li>
+    </ul>
+    
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="testBug0_TargetSpawnLocation()">Bug 0: Target Spawn Location</button>
+        <button onclick="testBug1_TargetFreezeOnHit()">Bug 1: Target Freeze on Hit</button>
+        <button onclick="testBug2_GameProgressWithoutHits()">Bug 2: Game Progress</button>
+        <button onclick="testBug3_QuestionAnswerFormat()">Bug 3: Question/Answer Format</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(type, msg) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`${type.toUpperCase()}: ${msg}`);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function getGameWindow() {
+            return document.getElementById('gameFrame').contentWindow;
+        }
+        
+        function testBug0_TargetSpawnLocation() {
+            log('warning', '=== BUG 0: Testing Target Spawn Location ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                const targets = gameDoc.querySelectorAll('.target');
+                
+                if (!gameBoard) {
+                    log('fail', 'Game board not found');
+                    return;
+                }
+                
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                log('info', `Game board top: ${gameBoardRect.top}px, bottom: ${gameBoardRect.bottom}px`);
+                
+                let targetsAboveBoard = 0;
+                let targetsInBoard = 0;
+                
+                targets.forEach((target, index) => {
+                    const targetRect = target.getBoundingClientRect();
+                    
+                    // Check if target is above the game board
+                    if (targetRect.bottom < gameBoardRect.top) {
+                        targetsAboveBoard++;
+                        log('fail', `BUG DETECTED: Target ${index} spawns ABOVE game board (target bottom: ${targetRect.bottom}px < board top: ${gameBoardRect.top}px)`);
+                    } else if (targetRect.top >= gameBoardRect.top && targetRect.bottom <= gameBoardRect.bottom) {
+                        targetsInBoard++;
+                        log('pass', `Target ${index} correctly spawns within game board boundaries`);
+                    } else if (targetRect.top < gameBoardRect.top && targetRect.bottom > gameBoardRect.top) {
+                        log('info', `Target ${index} spans above and into game board (partially above)`);
+                    }
+                });
+                
+                if (targetsAboveBoard > 0) {
+                    log('fail', `BUG 0 CONFIRMED: ${targetsAboveBoard} targets spawn above game board (should spawn within board)`);
+                } else {
+                    log('pass', `Bug 0 not detected: All targets spawn within or near game board`);
+                }
+                
+            }, 2000);
+        }
+        
+        function testBug1_TargetFreezeOnHit() {
+            log('warning', '=== BUG 1: Testing Target Freeze on Hit ===');
+            const gameDoc = getGameDoc();
+            const gameWin = getGameWindow();
+            
+            setTimeout(() => {
+                const targets = gameDoc.querySelectorAll('.target');
+                if (targets.length === 0) {
+                    log('warning', 'No targets found to test collision freeze');
+                    return;
+                }
+                
+                // Record initial positions
+                const initialPositions = [];
+                targets.forEach((target, index) => {
+                    const rect = target.getBoundingClientRect();
+                    initialPositions[index] = {
+                        top: rect.top,
+                        element: target
+                    };
+                });
+                
+                log('info', `Recorded positions for ${targets.length} targets before shooting`);
+                
+                // Fire a projectile
+                if (gameWin.createProjectile) {
+                    gameWin.createProjectile();
+                    log('info', 'Fired projectile to test collision behavior');
+                }
+                
+                // Check for freeze behavior after potential collision
+                setTimeout(() => {
+                    let frozenTargets = 0;
+                    let movingTargets = 0;
+                    
+                    initialPositions.forEach((initial, index) => {
+                        if (initial.element && initial.element.parentNode) {
+                            const currentRect = initial.element.getBoundingClientRect();
+                            const movement = currentRect.top - initial.top;
+                            
+                            // Check if target appears to be frozen (not moving much)
+                            if (Math.abs(movement) < 5) {
+                                // Check if target was hit (color changed)
+                                const bgColor = initial.element.style.background;
+                                if (bgColor.includes('ff0000') || bgColor.includes('00ff00')) {
+                                    frozenTargets++;
+                                    log('fail', `BUG DETECTED: Target ${index} appears FROZEN after hit (moved only ${movement.toFixed(0)}px)`);
+                                }
+                            } else {
+                                movingTargets++;
+                            }
+                        }
+                    });
+                    
+                    if (frozenTargets > 0) {
+                        log('fail', `BUG 1 CONFIRMED: ${frozenTargets} targets freeze after being hit (looks sloppy)`);
+                    } else {
+                        log('pass', `Bug 1 not detected: Targets continue moving or are removed properly after hits`);
+                    }
+                    
+                }, 2000);
+                
+            }, 1000);
+        }
+        
+        function testBug2_GameProgressWithoutHits() {
+            log('warning', '=== BUG 2: Testing Game Progress Without Hits ===');
+            const gameDoc = getGameDoc();
+            
+            // Record initial question
+            setTimeout(() => {
+                const questionText = gameDoc.getElementById('questionText');
+                if (!questionText) {
+                    log('fail', 'Question text element not found');
+                    return;
+                }
+                
+                const initialQuestion = questionText.textContent;
+                log('info', `Initial question: "${initialQuestion}"`);
+                
+                // Wait for targets to fall off screen without hitting any
+                log('info', 'Waiting for targets to fall off screen without hits...');
+                
+                setTimeout(() => {
+                    const currentQuestion = questionText.textContent;
+                    const remainingTargets = gameDoc.querySelectorAll('.target').length;
+                    
+                    log('info', `After wait - Question: "${currentQuestion}", Remaining targets: ${remainingTargets}`);
+                    
+                    if (initialQuestion === currentQuestion && remainingTargets === 0) {
+                        log('fail', `BUG DETECTED: Game stuck with same question "${currentQuestion}" and no targets (should cycle new targets)`);
+                        log('fail', `BUG 2 CONFIRMED: Game doesn't progress when no targets are hit`);
+                    } else if (initialQuestion !== currentQuestion) {
+                        log('pass', 'Game progressed to new question');
+                    } else if (remainingTargets > 0) {
+                        log('info', 'Targets still present, continuing to monitor...');
+                        
+                        // Check again after more time
+                        setTimeout(() => {
+                            const finalQuestion = questionText.textContent;
+                            const finalTargets = gameDoc.querySelectorAll('.target').length;
+                            
+                            if (initialQuestion === finalQuestion && finalTargets === 0) {
+                                log('fail', `BUG 2 CONFIRMED: Game stuck with same question after all targets fell off`);
+                            } else {
+                                log('pass', 'Game eventually progressed or maintained targets');
+                            }
+                        }, 3000);
+                    }
+                    
+                }, 8000); // Wait long enough for targets to fall off
+                
+            }, 1000);
+        }
+        
+        function testBug3_QuestionAnswerFormat() {
+            log('warning', '=== BUG 3: Testing Question/Answer Format ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const questionText = gameDoc.getElementById('questionText');
+                const targets = gameDoc.querySelectorAll('.target');
+                
+                if (!questionText) {
+                    log('fail', 'Question text element not found');
+                    return;
+                }
+                
+                const questionContent = questionText.textContent;
+                log('info', `Question displayed: "${questionContent}"`);
+                
+                // Check if question follows "What is [term]?" format
+                const isWhatIsFormat = questionContent.includes('What is ') && questionContent.includes('?');
+                
+                if (isWhatIsFormat) {
+                    log('fail', `BUG DETECTED: Question uses "What is [term]?" format - should show definition instead`);
+                    
+                    // Check target content
+                    let correctTarget = null;
+                    targets.forEach((target, index) => {
+                        if (target.dataset.isCorrect === 'true') {
+                            correctTarget = target;
+                            log('info', `Correct answer target ${index}: "${target.textContent}"`);
+                        }
+                    });
+                    
+                    if (correctTarget) {
+                        const answerText = correctTarget.textContent;
+                        // If answer looks like a definition (longer text), then format is wrong
+                        if (answerText.length > 50) {
+                            log('fail', `BUG 3 CONFIRMED: Definition "${answerText.substring(0, 30)}..." is in target (should be in question box)`);
+                        } else {
+                            log('info', `Correct answer appears to be a term: "${answerText}"`);
+                        }
+                    }
+                } else {
+                    log('pass', 'Question does not use "What is [term]?" format');
+                }
+                
+                // Additional check: Look for definition-like content in question vs term-like content in answers
+                const questionIsLong = questionContent.length > 50;
+                const hasShortAnswers = Array.from(targets).some(t => t.textContent.length < 20);
+                
+                if (!questionIsLong && hasShortAnswers) {
+                    log('warning', 'Current format may be correct (short question, short answers)');
+                } else if (questionIsLong && !hasShortAnswers) {
+                    log('pass', 'Format appears correct (long question/definition, shorter answer options)');
+                }
+                
+            }, 1000);
+        }
+    </script>
+</body>
+</html> 

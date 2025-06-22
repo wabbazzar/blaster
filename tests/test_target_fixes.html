@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Target Fixes Verification</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 500px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #ffff00; }
+        button { background: #003366; color: #00ffff; border: 1px solid #00ffff; padding: 10px; margin: 5px; }
+        #results { max-height: 400px; overflow-y: auto; border: 1px solid #444; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Target Fixes Verification Test</h1>
+    <iframe id="gameFrame" src="index.html"></iframe>
+    
+    <div>
+        <button onclick="runCompleteTest()">Run Complete Verification</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(type, msg) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${type.toUpperCase()}: ${msg}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`${type.toUpperCase()}: ${msg}`);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function getGameWindow() {
+            return document.getElementById('gameFrame').contentWindow;
+        }
+        
+        function runCompleteTest() {
+            clearResults();
+            log('info', '=== STARTING COMPLETE TARGET FIXES VERIFICATION ===');
+            
+            // Test 1: Force new question to trigger target spawning
+            setTimeout(() => {
+                const gameWin = getGameWindow();
+                if (gameWin.loadNewQuestion) {
+                    gameWin.loadNewQuestion();
+                    log('info', 'Triggered new question for target spawning');
+                }
+                
+                // Test 2: Monitor target spawning over time
+                monitorTargetSpawning();
+                
+            }, 500);
+        }
+        
+        function monitorTargetSpawning() {
+            const gameDoc = getGameDoc();
+            const gameBoard = gameDoc.getElementById('gameBoard');
+            
+            let spawnTimes = [];
+            let targetPositions = [];
+            let maxTargets = 0;
+            
+            const checkInterval = setInterval(() => {
+                const targets = gameDoc.querySelectorAll('.target');
+                
+                // Track new spawns
+                if (targets.length > maxTargets) {
+                    spawnTimes.push(Date.now());
+                    maxTargets = targets.length;
+                    log('info', `Target ${maxTargets} spawned at ${Date.now()}`);
+                }
+                
+                // Record all current positions
+                targets.forEach((target, index) => {
+                    const left = parseInt(target.style.left);
+                    const top = parseInt(target.style.top);
+                    const width = target.offsetWidth;
+                    const height = target.offsetHeight;
+                    
+                    targetPositions[index] = { left, top, width, height, right: left + width, bottom: top + height };
+                });
+                
+            }, 100);
+            
+            // Stop monitoring after 5 seconds and run tests
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                runPositionTests(targetPositions, spawnTimes, gameBoard);
+            }, 5000);
+        }
+        
+        function runPositionTests(positions, spawnTimes, gameBoard) {
+            log('info', '=== TESTING SPAWN TIMING ===');
+            
+            // Test spawn timing
+            if (spawnTimes.length <= 1) {
+                log('fail', 'Only one or no spawn events detected');
+            } else {
+                const delays = [];
+                for (let i = 1; i < spawnTimes.length; i++) {
+                    delays.push(spawnTimes[i] - spawnTimes[i-1]);
+                }
+                
+                const avgDelay = delays.reduce((a, b) => a + b, 0) / delays.length;
+                log('info', `Spawn delays: ${delays.join(', ')}ms`);
+                log('info', `Average delay: ${avgDelay.toFixed(1)}ms`);
+                
+                if (avgDelay >= 700 && avgDelay <= 900) {
+                    log('pass', 'Target spawn timing is correct (~800ms delays)');
+                } else {
+                    log('fail', `Target spawn timing incorrect (expected ~800ms, got ${avgDelay.toFixed(1)}ms)`);
+                }
+            }
+            
+            log('info', '=== TESTING BOUNDARY COMPLIANCE ===');
+            
+            // Test boundary compliance
+            const boardWidth = gameBoard.offsetWidth;
+            let boundaryViolations = 0;
+            
+            positions.forEach((pos, index) => {
+                if (pos.left < 0) {
+                    log('fail', `Target ${index} extends left of board (left: ${pos.left}px)`);
+                    boundaryViolations++;
+                } else if (pos.right > boardWidth) {
+                    log('fail', `Target ${index} extends right of board (right: ${pos.right}px > ${boardWidth}px)`);
+                    boundaryViolations++;
+                } else {
+                    log('pass', `Target ${index} within boundaries (${pos.left}px to ${pos.right}px)`);
+                }
+            });
+            
+            log('info', '=== TESTING TARGET SPACING ===');
+            
+            // Test target spacing
+            let clusterViolations = 0;
+            for (let i = 0; i < positions.length; i++) {
+                for (let j = i + 1; j < positions.length; j++) {
+                    const centerX1 = positions[i].left + positions[i].width / 2;
+                    const centerY1 = positions[i].top + positions[i].height / 2;
+                    const centerX2 = positions[j].left + positions[j].width / 2;
+                    const centerY2 = positions[j].top + positions[j].height / 2;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(centerX1 - centerX2, 2) + 
+                        Math.pow(centerY1 - centerY2, 2)
+                    );
+                    
+                    if (distance < 120) {
+                        log('fail', `Targets ${i} and ${j} too close (${distance.toFixed(1)}px < 120px required)`);
+                        clusterViolations++;
+                    } else {
+                        log('pass', `Targets ${i} and ${j} properly spaced (${distance.toFixed(1)}px)`);
+                    }
+                }
+            }
+            
+            log('info', '=== VERIFICATION SUMMARY ===');
+            log('info', `Total targets tested: ${positions.length}`);
+            log('info', `Spawn events detected: ${spawnTimes.length}`);
+            log('info', `Boundary violations: ${boundaryViolations}`);
+            log('info', `Clustering violations: ${clusterViolations}`);
+            
+            if (boundaryViolations === 0 && clusterViolations === 0 && spawnTimes.length > 1) {
+                log('pass', '✅ ALL TARGET FIXES VERIFIED SUCCESSFULLY!');
+            } else {
+                log('fail', '❌ Some target issues remain - check individual test results');
+            }
+            
+            log('info', '=== VERIFICATION COMPLETE ===');
+        }
+    </script>
+</body>
+</html> 
