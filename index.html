@@ -2,8 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Card Blaster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Card Blaster - Arcade Flashcard Learning Game</title>
+    <meta name="description" content="Card Blaster: An arcade-style flashcard learning game with Tron aesthetic. Learn data science concepts while playing!">
+    <meta name="keywords" content="flashcards, learning game, data science, arcade game, education">
+    <meta name="author" content="Card Blaster Team">
+    
+    <!-- Open Graph meta tags for social sharing -->
+    <meta property="og:title" content="Card Blaster - Arcade Flashcard Learning Game">
+    <meta property="og:description" content="Learn data science concepts through an exciting arcade-style game!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://wabbazzar.github.io/blaster/">
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Card Blaster">
+    <meta name="twitter:description" content="Arcade-style flashcard learning game">
+    
     <style>
         /* Phase 0 basic reset */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -372,12 +390,14 @@
                     // Remove targets that reach the bottom of the game board
                     const gameBoard = document.getElementById('gameBoard');
                     const boardHeight = gameBoard.offsetHeight; // 600px
+                    const targetHeight = 60; // Target height from createAnswerTarget
                     
-                    // Target should disappear when it reaches the bottom of the game board
-                    if (tgt.y >= boardHeight) { // Remove when target reaches bottom edge
+                    // Target should disappear when its BOTTOM reaches the bottom of the game board
+                    // tgt.y is the TOP of the target, so bottom = tgt.y + targetHeight
+                    if (tgt.y + targetHeight >= boardHeight) { // Remove when target bottom reaches board bottom
                         tgt.element.remove();
                         targets.splice(index, 1);
-                        console.log('Target removed - reached bottom of game board');
+                        console.log('Target removed - bottom reached bottom of game board');
                     }
                 } else if (!tgt.element || !tgt.element.parentNode) {
                     // Clean up orphaned target references

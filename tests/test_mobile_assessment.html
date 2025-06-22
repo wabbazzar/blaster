@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Mobile Assessment</title>
+    <style>
+        body { 
+            background: #111; 
+            color: #00ffff; 
+            font-family: monospace; 
+            padding: 10px; 
+            margin: 0;
+            font-size: 12px;
+        }
+        #gameFrame { 
+            width: 100%; 
+            height: 70vh; 
+            border: 1px solid #00ffff; 
+            margin-bottom: 10px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .critical { color: #ff0000; font-weight: bold; }
+        .warning { color: #ffff00; }
+        .info { color: #00ffff; }
+        button { 
+            background: #003366; 
+            color: #00ffff; 
+            border: 1px solid #00ffff; 
+            padding: 8px; 
+            margin: 2px; 
+            cursor: pointer;
+            font-size: 11px;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        #results { 
+            max-height: 200px; 
+            overflow-y: auto; 
+            border: 1px solid #00ffff; 
+            padding: 5px; 
+            font-size: 10px;
+        }
+        .mobile-info {
+            background: #003366;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mobile Assessment</h1>
+    <p>Testing mobile compatibility...</p>
+    
+    <div class="mobile-info">
+        <strong>Current Screen:</strong> <span id="screenInfo"></span><br>
+        <strong>Touch Support:</strong> <span id="touchSupport"></span><br>
+        <strong>Viewport:</strong> <span id="viewportInfo"></span>
+    </div>
+    
+    <iframe id="gameFrame" src="../index.html"></iframe>
+    
+    <div>
+        <button onclick="assessMobileReadiness()">📱 Assess Mobile Readiness</button>
+        <button onclick="testTouchControls()">👆 Test Touch Controls</button>
+        <button onclick="testResponsiveDesign()">📐 Test Responsive Design</button>
+        <button onclick="testMobilePerformance()">⚡ Test Mobile Performance</button>
+        <button onclick="clearResults()">🧹 Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        // Display device info
+        document.getElementById('screenInfo').textContent = `${window.innerWidth}x${window.innerHeight}`;
+        document.getElementById('touchSupport').textContent = 'ontouchstart' in window ? 'YES' : 'NO';
+        document.getElementById('viewportInfo').textContent = `${window.devicePixelRatio}x DPR`;
+        
+        function log(type, msg) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`${type.toUpperCase()}: ${msg}`);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function assessMobileReadiness() {
+            log('critical', '=== MOBILE READINESS ASSESSMENT ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                // 1. Check viewport meta tag
+                const viewportMeta = gameDoc.querySelector('meta[name="viewport"]');
+                if (!viewportMeta) {
+                    log('critical', 'CRITICAL: No viewport meta tag - game will not scale on mobile');
+                } else {
+                    log('info', `Viewport meta: ${viewportMeta.content}`);
+                    if (!viewportMeta.content.includes('user-scalable=no')) {
+                        log('warning', 'Mobile users can zoom - may cause issues');
+                    }
+                }
+                
+                // 2. Check touch event handling
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                const ship = gameDoc.getElementById('ship');
+                
+                if (!gameBoard || !ship) {
+                    log('critical', 'CRITICAL: Game elements not found');
+                    return;
+                }
+                
+                // 3. Check game board size on mobile
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                log('info', `Game board size: ${gameBoardRect.width}x${gameBoardRect.height}`);
+                
+                if (gameBoardRect.width > window.innerWidth) {
+                    log('critical', 'CRITICAL: Game board wider than mobile screen');
+                }
+                
+                if (gameBoardRect.height > window.innerHeight * 0.7) {
+                    log('warning', 'Game board takes up most of mobile screen');
+                }
+                
+                // 4. Check if controls are touch-friendly
+                const shipRect = ship.getBoundingClientRect();
+                if (shipRect.width < 44 || shipRect.height < 44) {
+                    log('critical', 'CRITICAL: Ship too small for touch interaction (< 44px)');
+                } else {
+                    log('pass', 'Ship size adequate for touch');
+                }
+                
+                // 5. Check for touch event listeners
+                let hasTouchEvents = false;
+                try {
+                    // Check if game has touch event handling
+                    const scripts = gameDoc.getElementsByTagName('script');
+                    for (let script of scripts) {
+                        if (script.textContent.includes('touchstart') || 
+                            script.textContent.includes('touchend') ||
+                            script.textContent.includes('touchmove')) {
+                            hasTouchEvents = true;
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    log('warning', 'Could not check for touch events');
+                }
+                
+                if (!hasTouchEvents) {
+                    log('critical', 'CRITICAL: No touch event handling detected');
+                } else {
+                    log('pass', 'Touch event handling found');
+                }
+                
+                // 6. Check mobile-specific CSS
+                const styles = gameDoc.getElementsByTagName('style');
+                let hasMobileCSS = false;
+                for (let style of styles) {
+                    if (style.textContent.includes('@media') && 
+                        (style.textContent.includes('max-width') || style.textContent.includes('mobile'))) {
+                        hasMobileCSS = true;
+                        break;
+                    }
+                }
+                
+                if (!hasMobileCSS) {
+                    log('critical', 'CRITICAL: No mobile-responsive CSS detected');
+                } else {
+                    log('pass', 'Mobile CSS media queries found');
+                }
+                
+            }, 1000);
+        }
+        
+        function testTouchControls() {
+            log('warning', '=== TESTING TOUCH CONTROLS ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                const ship = gameDoc.getElementById('ship');
+                
+                if (!gameBoard || !ship) {
+                    log('fail', 'Game elements not found for touch testing');
+                    return;
+                }
+                
+                // Test if game board responds to touch
+                let touchTested = false;
+                
+                // Simulate touch events
+                try {
+                    const touchStartEvent = new TouchEvent('touchstart', {
+                        bubbles: true,
+                        cancelable: true,
+                        touches: [{
+                            clientX: gameBoard.getBoundingClientRect().left + 50,
+                            clientY: gameBoard.getBoundingClientRect().top + 50,
+                            target: gameBoard
+                        }]
+                    });
+                    
+                    gameBoard.dispatchEvent(touchStartEvent);
+                    log('info', 'Touch event dispatched to game board');
+                    touchTested = true;
+                } catch (e) {
+                    log('warning', 'Could not simulate touch events: ' + e.message);
+                }
+                
+                // Check for virtual controls
+                const virtualControls = gameDoc.querySelectorAll('[id*="control"], [class*="control"], [id*="button"], [class*="button"]');
+                if (virtualControls.length === 0) {
+                    log('critical', 'CRITICAL: No virtual controls for mobile detected');
+                } else {
+                    log('info', `Found ${virtualControls.length} potential virtual controls`);
+                }
+                
+                // Check control sizes
+                virtualControls.forEach((control, index) => {
+                    const rect = control.getBoundingClientRect();
+                    if (rect.width < 44 || rect.height < 44) {
+                        log('fail', `Control ${index} too small for touch (${rect.width}x${rect.height})`);
+                    } else {
+                        log('pass', `Control ${index} touch-friendly size`);
+                    }
+                });
+                
+            }, 1000);
+        }
+        
+        function testResponsiveDesign() {
+            log('warning', '=== TESTING RESPONSIVE DESIGN ===');
+            
+            const breakpoints = [
+                { name: 'iPhone SE', width: 320, height: 568 },
+                { name: 'iPhone 12', width: 390, height: 844 },
+                { name: 'iPad', width: 768, height: 1024 },
+                { name: 'Desktop', width: 1024, height: 768 }
+            ];
+            
+            breakpoints.forEach(bp => {
+                // Simulate different screen sizes
+                log('info', `Testing ${bp.name} (${bp.width}x${bp.height})`);
+                
+                const gameDoc = getGameDoc();
+                if (!gameDoc) return;
+                
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                if (!gameBoard) return;
+                
+                const rect = gameBoard.getBoundingClientRect();
+                
+                if (rect.width > bp.width) {
+                    log('fail', `Game board too wide for ${bp.name} (${rect.width}px > ${bp.width}px)`);
+                } else {
+                    log('pass', `Game board fits ${bp.name} width`);
+                }
+                
+                if (rect.height > bp.height * 0.8) {
+                    log('warning', `Game board very tall for ${bp.name}`);
+                }
+            });
+        }
+        
+        function testMobilePerformance() {
+            log('warning', '=== TESTING MOBILE PERFORMANCE ===');
+            
+            // Test frame rate
+            let frameCount = 0;
+            let startTime = performance.now();
+            
+            function countFrames() {
+                frameCount++;
+                if (performance.now() - startTime < 1000) {
+                    requestAnimationFrame(countFrames);
+                } else {
+                    const fps = frameCount;
+                    if (fps < 30) {
+                        log('critical', `CRITICAL: Low FPS on mobile (${fps} FPS)`);
+                    } else if (fps < 45) {
+                        log('warning', `Warning: Moderate FPS (${fps} FPS)`);
+                    } else {
+                        log('pass', `Good FPS performance (${fps} FPS)`);
+                    }
+                }
+            }
+            requestAnimationFrame(countFrames);
+            
+            // Test memory usage (approximate)
+            if (performance.memory) {
+                const memUsed = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                log('info', `JS Memory usage: ${memUsed}MB`);
+                
+                if (memUsed > 50) {
+                    log('warning', 'High memory usage for mobile device');
+                }
+            }
+            
+            // Test touch responsiveness
+            let touchStartTime;
+            document.addEventListener('touchstart', function(e) {
+                touchStartTime = performance.now();
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                if (touchStartTime) {
+                    const touchDelay = performance.now() - touchStartTime;
+                    if (touchDelay > 100) {
+                        log('warning', `Slow touch response: ${touchDelay.toFixed(1)}ms`);
+                    } else {
+                        log('pass', `Good touch response: ${touchDelay.toFixed(1)}ms`);
+                    }
+                }
+            });
+            
+            log('info', 'Touch the screen to test responsiveness...');
+        }
+    </script>
+</body>
+</html> 

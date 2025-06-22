@@ -152,6 +152,25 @@ test-final-fixes:
 test-actual-bugs:
 	@open http://localhost:8000/tests/test_actual_bugs.html || xdg-open http://localhost:8000/tests/test_actual_bugs.html
 
+test-board-boundary:
+	@open http://localhost:8000/tests/test_board_boundary.html || xdg-open http://localhost:8000/tests/test_board_boundary.html
+
+# Mobile testing commands
+test-mobile-assessment:
+	@open http://localhost:8000/tests/test_mobile_assessment.html || xdg-open http://localhost:8000/tests/test_mobile_assessment.html
+
+test-mobile-device:
+	@echo "🚨 MOBILE DEVICE TESTING 🚨"
+	@echo "Connect your mobile device and navigate to:"
+	@echo "http://$(shell ifconfig | grep 'inet ' | grep -v 127.0.0.1 | head -1 | awk '{print $$2}' 2>/dev/null || echo '[your-ip]'):8000/"
+	@echo ""
+	@echo "Mobile Testing Checklist:"
+	@echo "  ❌ Touch controls (currently keyboard only)"
+	@echo "  ❌ Responsive design (fixed 400px width)"  
+	@echo "  ❌ Virtual fire button (spacebar only)"
+	@echo "  ❌ Mobile-friendly HUD"
+	@echo "  ❌ PWA installation capability"
+
 # Run all core tests in sequence
 test-all:
 	@echo "Running all Card Blaster tests..."
@@ -166,3 +185,7 @@ test-all:
 	@make test-collision
 	@sleep 2
 	@make test-complete
+	@sleep 2
+	@make test-board-boundary
+	@sleep 2
+	@make test-mobile-assessment

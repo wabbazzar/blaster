@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Boundary Test</title>
+    <style>
+        body { background: #111; color: #00ffff; font-family: monospace; padding: 20px; }
+        #gameFrame { width: 100%; height: 600px; border: 1px solid #00ffff; }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .warning { color: #ffff00; }
+        .info { color: #00ffff; }
+        button { 
+            background: #003366; 
+            color: #00ffff; 
+            border: 1px solid #00ffff; 
+            padding: 10px; 
+            margin: 5px; 
+            cursor: pointer;
+        }
+        #results { 
+            max-height: 400px; 
+            overflow-y: auto; 
+            border: 1px solid #00ffff; 
+            padding: 10px; 
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Board Boundary Test</h1>
+    <p><strong>Issue:</strong> Targets appearing below the game board (cyan line where ship is)</p>
+    <p><strong>Expected:</strong> Targets should disappear when they reach the bottom of the game board</p>
+    
+    <iframe id="gameFrame" src="../index.html"></iframe>
+    
+    <div>
+        <button onclick="testBoardBoundary()">🎯 Test Board Boundary</button>
+        <button onclick="testShipPosition()">🚀 Test Ship Position</button>
+        <button onclick="testTargetDisappearance()">💥 Test Target Disappearance</button>
+        <button onclick="clearResults()">🧹 Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(type, msg) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`${type.toUpperCase()}: ${msg}`);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function getGameDoc() {
+            return document.getElementById('gameFrame').contentDocument;
+        }
+        
+        function testBoardBoundary() {
+            log('warning', '=== TESTING BOARD BOUNDARY ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                const ship = gameDoc.getElementById('ship');
+                const targets = gameDoc.querySelectorAll('.target');
+                
+                if (!gameBoard || !ship) {
+                    log('fail', 'Game board or ship not found');
+                    return;
+                }
+                
+                // Get exact positions
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                const shipRect = ship.getBoundingClientRect();
+                
+                log('info', `Game board: top=${gameBoardRect.top}px, bottom=${gameBoardRect.bottom}px, height=${gameBoardRect.height}px`);
+                log('info', `Ship position: top=${shipRect.top}px, bottom=${shipRect.bottom}px`);
+                
+                // Calculate the ship's bottom edge relative to game board
+                const shipBottomInBoard = shipRect.bottom - gameBoardRect.top;
+                log('info', `Ship bottom relative to board: ${shipBottomInBoard}px`);
+                
+                // The board boundary should be where the ship sits (bottom of game board)
+                const boardBoundary = gameBoardRect.bottom;
+                log('info', `Board boundary (where targets should disappear): ${boardBoundary}px`);
+                
+                // Check targets
+                let targetsAboveBoundary = 0;
+                let targetsBelowBoundary = 0;
+                
+                targets.forEach((target, index) => {
+                    const targetRect = target.getBoundingClientRect();
+                    
+                    if (targetRect.bottom <= boardBoundary) {
+                        targetsAboveBoundary++;
+                        log('pass', `Target ${index} correctly above boundary (bottom: ${targetRect.bottom}px)`);
+                    } else {
+                        targetsBelowBoundary++;
+                        log('fail', `BUG: Target ${index} below boundary! (bottom: ${targetRect.bottom}px > boundary: ${boardBoundary}px)`);
+                    }
+                });
+                
+                if (targetsBelowBoundary > 0) {
+                    log('fail', `BOUNDARY BUG DETECTED: ${targetsBelowBoundary} targets below game board boundary`);
+                } else {
+                    log('pass', `All ${targetsAboveBoundary} targets respect board boundary`);
+                }
+                
+            }, 2000);
+        }
+        
+        function testShipPosition() {
+            log('warning', '=== TESTING SHIP POSITION ===');
+            const gameDoc = getGameDoc();
+            
+            setTimeout(() => {
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                const ship = gameDoc.getElementById('ship');
+                
+                if (!gameBoard || !ship) {
+                    log('fail', 'Game board or ship not found');
+                    return;
+                }
+                
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                const shipRect = ship.getBoundingClientRect();
+                
+                // Ship should be at the bottom of the game board
+                const shipDistanceFromBottom = gameBoardRect.bottom - shipRect.bottom;
+                log('info', `Ship distance from board bottom: ${shipDistanceFromBottom}px`);
+                
+                if (shipDistanceFromBottom < 30) {
+                    log('pass', 'Ship correctly positioned at bottom of game board');
+                } else {
+                    log('warning', `Ship seems far from board bottom (${shipDistanceFromBottom}px)`);
+                }
+                
+                // Check if ship is within board boundaries
+                if (shipRect.top >= gameBoardRect.top && shipRect.bottom <= gameBoardRect.bottom) {
+                    log('pass', 'Ship is within game board boundaries');
+                } else {
+                    log('fail', 'Ship is outside game board boundaries');
+                }
+                
+            }, 1000);
+        }
+        
+        function testTargetDisappearance() {
+            log('warning', '=== TESTING TARGET DISAPPEARANCE ===');
+            const gameDoc = getGameDoc();
+            
+            // Track targets over time to see if they disappear at the right point
+            setTimeout(() => {
+                const gameBoard = gameDoc.getElementById('gameBoard');
+                const ship = gameDoc.getElementById('ship');
+                let initialTargets = gameDoc.querySelectorAll('.target');
+                
+                if (!gameBoard || !ship) {
+                    log('fail', 'Game board or ship not found');
+                    return;
+                }
+                
+                const gameBoardRect = gameBoard.getBoundingClientRect();
+                const shipRect = ship.getBoundingClientRect();
+                const boardBoundary = gameBoardRect.bottom;
+                
+                log('info', `Monitoring ${initialTargets.length} targets for disappearance at boundary: ${boardBoundary}px`);
+                
+                // Track targets as they fall
+                const targetTracker = [];
+                initialTargets.forEach((target, index) => {
+                    const targetRect = target.getBoundingClientRect();
+                    targetTracker.push({
+                        index: index,
+                        element: target,
+                        initialTop: targetRect.top,
+                        lastSeen: targetRect.bottom
+                    });
+                });
+                
+                // Check every second for 10 seconds
+                let checkCount = 0;
+                const checkInterval = setInterval(() => {
+                    checkCount++;
+                    
+                    targetTracker.forEach(tracker => {
+                        if (tracker.element && tracker.element.parentNode) {
+                            const currentRect = tracker.element.getBoundingClientRect();
+                            tracker.lastSeen = currentRect.bottom;
+                            
+                            // Check if target is below boundary but still exists
+                            if (currentRect.bottom > boardBoundary) {
+                                log('fail', `BUG: Target ${tracker.index} still exists below boundary! (bottom: ${currentRect.bottom}px)`);
+                            }
+                        } else {
+                            // Target was removed - check if it was at the right position
+                            if (tracker.lastSeen <= boardBoundary + 10) { // 10px tolerance
+                                log('pass', `Target ${tracker.index} correctly disappeared near boundary (last seen: ${tracker.lastSeen}px)`);
+                            } else {
+                                log('warning', `Target ${tracker.index} disappeared but was below boundary (last seen: ${tracker.lastSeen}px)`);
+                            }
+                            // Remove from tracking
+                            tracker.element = null;
+                        }
+                    });
+                    
+                    if (checkCount >= 10) {
+                        clearInterval(checkInterval);
+                        log('info', 'Target disappearance monitoring complete');
+                    }
+                }, 1000);
+                
+            }, 1000);
+        }
+    </script>
+</body>
+</html> 
