@@ -512,6 +512,137 @@
         #pauseOverlay:hover {
             background: rgba(0, 0, 0, 0.98);
         }
+        
+        /* Level completion animations */
+        @keyframes levelCompleteFlash {
+            0% {
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        
+        @keyframes levelCompleteText {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            40% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+        
+        @keyframes levelAdvanceText {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(30px);
+            }
+            35% {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0px);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0px);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(-15px);
+            }
+        }
+        
+        /* Victory animations */
+        @keyframes victoryRainbow {
+            0% {
+                opacity: 0;
+                transform: rotate(0deg);
+            }
+            20% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0.6;
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes victoryText {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3) rotateY(180deg);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.3) rotateY(0deg);
+            }
+            40% {
+                transform: translate(-50%, -50%) scale(1.1) rotateY(-10deg);
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(1.2) rotateY(10deg);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+            }
+        }
+        
+        @keyframes masteryText {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            30% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        @keyframes finalScoreText {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(50px);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0px);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -646,6 +777,9 @@
             
             // Setup start button
             setupStartButton();
+            
+            // Setup deck selection
+            setupDeckSelection();
             
             console.log('Game initialized');
         }
@@ -1115,6 +1249,9 @@
         function levelComplete() {
             console.log(`🎉 LEVEL ${currentProgressionLevel} COMPLETE! 🎉`);
             
+            // Show level completion animation
+            showLevelCompletionAnimation();
+            
             // Check if there are more levels
             const nextLevel = currentProgressionLevel + 1;
             const nextLevelCards = flashcards.filter(card => 
@@ -1124,6 +1261,9 @@
             if (nextLevelCards.length > 0) {
                 currentProgressionLevel = nextLevel;
                 console.log(`Advancing to Level ${currentProgressionLevel}`);
+                
+                // Update level display
+                updateLevel(currentProgressionLevel);
                 
                 // Initialize new level cards
                 nextLevelCards.forEach(card => {
@@ -1141,10 +1281,175 @@
             }
         }
         
+        // Show level completion animation
+        function showLevelCompletionAnimation() {
+            // Create animation overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'level-completion-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.background = 'radial-gradient(circle, rgba(0,255,0,0.3) 0%, rgba(0,255,0,0.1) 40%, transparent 70%)';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.zIndex = '999';
+            overlay.style.opacity = '0';
+            overlay.style.animation = 'levelCompleteFlash 2s ease-out forwards';
+            
+            // Add level complete text
+            const levelText = document.createElement('div');
+            levelText.className = 'level-complete-text';
+            levelText.textContent = `LEVEL ${currentProgressionLevel} COMPLETE!`;
+            levelText.style.position = 'absolute';
+            levelText.style.top = '40%';
+            levelText.style.left = '50%';
+            levelText.style.transform = 'translate(-50%, -50%)';
+            levelText.style.fontSize = 'clamp(2rem, 8vw, 3.5rem)';
+            levelText.style.fontWeight = 'bold';
+            levelText.style.color = '#00ff00';
+            levelText.style.textShadow = '0 0 20px #00ff00, 0 0 40px #00ff00, 0 0 60px #00ff00';
+            levelText.style.textAlign = 'center';
+            levelText.style.fontFamily = 'Courier New, monospace';
+            levelText.style.letterSpacing = '0.2em';
+            levelText.style.opacity = '0';
+            levelText.style.animation = 'levelCompleteText 2s ease-out forwards';
+            
+            // Add advancement text
+            const advanceText = document.createElement('div');
+            advanceText.className = 'level-advance-text';
+            advanceText.textContent = `ADVANCING TO LEVEL ${currentProgressionLevel + 1}`;
+            advanceText.style.position = 'absolute';
+            advanceText.style.top = '60%';
+            advanceText.style.left = '50%';
+            advanceText.style.transform = 'translate(-50%, -50%)';
+            advanceText.style.fontSize = 'clamp(1rem, 4vw, 1.5rem)';
+            advanceText.style.fontWeight = 'bold';
+            advanceText.style.color = '#00ffff';
+            advanceText.style.textShadow = '0 0 10px #00ffff, 0 0 20px #00ffff';
+            advanceText.style.textAlign = 'center';
+            advanceText.style.fontFamily = 'Courier New, monospace';
+            advanceText.style.letterSpacing = '0.1em';
+            advanceText.style.opacity = '0';
+            advanceText.style.animation = 'levelAdvanceText 2s ease-out forwards 0.5s';
+            
+            overlay.appendChild(levelText);
+            overlay.appendChild(advanceText);
+            document.body.appendChild(overlay);
+            
+            // Trigger haptic feedback if supported
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200, 100, 200]);
+            }
+            
+            // Remove overlay after animation
+            setTimeout(() => {
+                if (overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
+            }, 2500);
+            
+            console.log(`Level completion animation: Level ${currentProgressionLevel}`);
+        }
+        
         // Handle game victory
         function victoryComplete() {
             console.log('🏆 VICTORY! All cards mastered! 🏆');
-            // Will implement victory screen later
+            
+            // Show victory animation
+            showVictoryAnimation();
+            
+            // Stop game
+            gameRunning = false;
+            gamePaused = false;
+            
+            // Stop game loops
+            if (projectileInterval) clearInterval(projectileInterval);
+            if (targetInterval) clearInterval(targetInterval);
+        }
+        
+        // Show victory animation
+        function showVictoryAnimation() {
+            // Create victory overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'victory-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.background = 'conic-gradient(from 0deg, rgba(255,0,153,0.3), rgba(0,255,255,0.3), rgba(0,255,0,0.3), rgba(255,102,0,0.3), rgba(153,0,255,0.3), rgba(255,255,0,0.3), rgba(255,0,153,0.3))';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.zIndex = '999';
+            overlay.style.opacity = '0';
+            overlay.style.animation = 'victoryRainbow 3s ease-out forwards';
+            
+            // Add victory text
+            const victoryText = document.createElement('div');
+            victoryText.className = 'victory-text';
+            victoryText.textContent = 'VICTORY!';
+            victoryText.style.position = 'absolute';
+            victoryText.style.top = '30%';
+            victoryText.style.left = '50%';
+            victoryText.style.transform = 'translate(-50%, -50%)';
+            victoryText.style.fontSize = 'clamp(3rem, 12vw, 5rem)';
+            victoryText.style.fontWeight = 'bold';
+            victoryText.style.color = '#ffff00';
+            victoryText.style.textShadow = '0 0 30px #ffff00, 0 0 60px #ffff00, 0 0 90px #ffff00';
+            victoryText.style.textAlign = 'center';
+            victoryText.style.fontFamily = 'Courier New, monospace';
+            victoryText.style.letterSpacing = '0.3em';
+            victoryText.style.opacity = '0';
+            victoryText.style.animation = 'victoryText 3s ease-out forwards';
+            
+            // Add mastery text
+            const masteryText = document.createElement('div');
+            masteryText.className = 'mastery-text';
+            masteryText.textContent = 'ALL CARDS MASTERED!';
+            masteryText.style.position = 'absolute';
+            masteryText.style.top = '50%';
+            masteryText.style.left = '50%';
+            masteryText.style.transform = 'translate(-50%, -50%)';
+            masteryText.style.fontSize = 'clamp(1.5rem, 6vw, 2.5rem)';
+            masteryText.style.fontWeight = 'bold';
+            masteryText.style.color = '#00ff00';
+            masteryText.style.textShadow = '0 0 20px #00ff00, 0 0 40px #00ff00';
+            masteryText.style.textAlign = 'center';
+            masteryText.style.fontFamily = 'Courier New, monospace';
+            masteryText.style.letterSpacing = '0.2em';
+            masteryText.style.opacity = '0';
+            masteryText.style.animation = 'masteryText 3s ease-out forwards 0.5s';
+            
+            // Add final score
+            const scoreText = document.createElement('div');
+            scoreText.className = 'final-score-text';
+            scoreText.textContent = `FINAL SCORE: ${score}`;
+            scoreText.style.position = 'absolute';
+            scoreText.style.top = '70%';
+            scoreText.style.left = '50%';
+            scoreText.style.transform = 'translate(-50%, -50%)';
+            scoreText.style.fontSize = 'clamp(1rem, 4vw, 1.5rem)';
+            scoreText.style.fontWeight = 'bold';
+            scoreText.style.color = '#00ffff';
+            scoreText.style.textShadow = '0 0 15px #00ffff, 0 0 30px #00ffff';
+            scoreText.style.textAlign = 'center';
+            scoreText.style.fontFamily = 'Courier New, monospace';
+            scoreText.style.letterSpacing = '0.1em';
+            scoreText.style.opacity = '0';
+            scoreText.style.animation = 'finalScoreText 3s ease-out forwards 1s';
+            
+            overlay.appendChild(victoryText);
+            overlay.appendChild(masteryText);
+            overlay.appendChild(scoreText);
+            document.body.appendChild(overlay);
+            
+            // Trigger celebration haptic feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate([300, 100, 300, 100, 300, 100, 300]);
+            }
+            
+            // Keep victory screen visible
+            console.log(`Victory animation displayed! Final score: ${score}`);
         }
         
         // Enhanced game over
@@ -1355,14 +1660,38 @@
             target.style.display = 'flex';
             target.style.alignItems = 'center';
             target.style.justifyContent = 'center';
-            target.style.color = '#ffffff';
+            target.style.border = `2px solid ${isCorrect ? '#00ff00' : '#ff0000'}`;
+            target.style.borderRadius = '50%';
+            target.style.background = isCorrect ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)';
+            target.style.color = isCorrect ? '#00ff00' : '#ff0000';
+            target.style.fontFamily = 'Courier New, monospace';
             target.style.fontSize = '10px';
+            target.style.fontWeight = 'bold';
             target.style.textAlign = 'center';
-            target.style.padding = '2px';
-            target.style.overflow = 'hidden';
-            target.textContent = answer.substring(0, 30) + (answer.length > 30 ? '...' : '');
-            target.dataset.isCorrect = isCorrect;
-            target.dataset.fullAnswer = answer;
+            target.style.userSelect = 'none';
+            target.style.cursor = 'pointer';
+            target.style.boxShadow = `0 0 10px ${isCorrect ? '#00ff00' : '#ff0000'}`;
+            target.style.zIndex = '10';
+            target.textContent = answer;
+            
+            // Add card state indicator if this is the correct answer
+            if (isCorrect && currentQuestion && cardStates.has(currentQuestion.id)) {
+                const cardState = cardStates.get(currentQuestion.id);
+                const indicator = document.createElement('div');
+                indicator.className = 'card-state-indicator';
+                
+                // Set indicator color based on card state
+                if (cardState.state === 'new') {
+                    indicator.classList.add('card-state-new');
+                } else if (cardState.state === 'struggling') {
+                    indicator.classList.add('card-state-struggling');
+                } else if (cardState.state === 'learned') {
+                    indicator.classList.add('card-state-learned');
+                }
+                
+                target.appendChild(indicator);
+            }
+            
             gameBoard.appendChild(target);
             
             targets.push({
@@ -1822,6 +2151,63 @@
             }, { passive: false });
             
             console.log('Touch controls initialized (Tetris-style zones)');
+        }
+
+        // Setup deck selection
+        function setupDeckSelection() {
+            const deckSelect = document.getElementById('deckSelect');
+            
+            deckSelect.addEventListener('change', async function() {
+                const selectedDeckFilename = deckSelect.value;
+                console.log(`Deck changed to: ${selectedDeckFilename}`);
+                
+                // Stop current game if running
+                if (gameRunning) {
+                    gameRunning = false;
+                    gamePaused = false;
+                    
+                    // Clear intervals
+                    if (projectileInterval) clearInterval(projectileInterval);
+                    if (targetInterval) clearInterval(targetInterval);
+                    
+                    // Clear targets and projectiles
+                    targets.forEach(target => target.element.remove());
+                    targets = [];
+                    projectiles.forEach(proj => proj.element.remove());
+                    projectiles = [];
+                }
+                
+                // Load the new deck
+                try {
+                    await discoverAvailableDecks();
+                    await loadSelectedDeck(selectedDeckFilename, 1);
+                    
+                    // Reset game state for new deck
+                    score = 0;
+                    level = 1;
+                    lives = 5;
+                    currentProgressionLevel = 1;
+                    
+                    // Update displays
+                    updateScore(0);
+                    updateLevel(1);
+                    updateLivesDisplay();
+                    
+                    console.log(`Successfully loaded new deck: ${selectedDeckFilename}`);
+                    
+                    // Restart game with new deck
+                    if (document.getElementById('startOverlay').classList.contains('active')) {
+                        // Game hasn't started yet, just load the new deck
+                        console.log('Deck ready for when game starts');
+                    } else {
+                        // Game was running, restart with new deck
+                        startGame();
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to load new deck:', error);
+                }
+            });
         }
 
         // Initialize game when page loads
