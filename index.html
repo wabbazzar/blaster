@@ -285,6 +285,20 @@
             background: #00ffff;
             border-radius: 5px;
             box-shadow: 0 0 10px #00ffff;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        /* Add larger touch target for mobile */
+        #ship::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            z-index: -1;
         }
         
         /* Game state overlays */
@@ -2065,6 +2079,37 @@
                 }, 350);
             }
             
+            // Ship dragging variables
+            let isDraggingShip = false;
+            let shipDragOffset = { x: 0, y: 0 };
+            
+            // Check if touch is on ship
+            function isTouchOnShip(x, y) {
+                const ship = document.getElementById('ship');
+                const shipRect = ship.getBoundingClientRect();
+                
+                // Add some padding for easier touching
+                const padding = 20;
+                return (x >= shipRect.left - padding && 
+                        x <= shipRect.right + padding && 
+                        y >= shipRect.top - padding && 
+                        y <= shipRect.bottom + padding);
+            }
+            
+            // Convert screen coordinates to ship position
+            function screenToShipPosition(screenX) {
+                const gameBoard = document.getElementById('gameBoard');
+                const boardRect = gameBoard.getBoundingClientRect();
+                
+                // Calculate relative position within game board
+                const relativeX = screenX - boardRect.left;
+                
+                // Ship is 40px wide, so center it on the touch point
+                const shipPosition = relativeX - 20;
+                
+                return shipPosition;
+            }
+            
             // Touch start handler
             wrapper.addEventListener('touchstart', (e) => {
                 if (!gameRunning || gamePaused) return;
@@ -2076,6 +2121,29 @@
                 isSwipeDown = false;
                 isSwipeRight = false;
                 isSwipeLeft = false;
+                
+                // Check if touching the ship first
+                if (isTouchOnShip(touch.clientX, touch.clientY)) {
+                    isDraggingShip = true;
+                    const ship = document.getElementById('ship');
+                    const shipRect = ship.getBoundingClientRect();
+                    shipDragOffset = {
+                        x: touch.clientX - shipRect.left,
+                        y: touch.clientY - shipRect.top
+                    };
+                    
+                    // Visual feedback for ship grab
+                    ship.style.transform = 'scale(1.1)';
+                    ship.style.boxShadow = '0 0 20px #00ffff, 0 0 30px #00ffff';
+                    
+                    console.log('Ship drag started');
+                    
+                    // Haptic feedback if supported
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(50);
+                    }
+                    return;
+                }
                 
                 const zone = getTouchZone(touch.clientX, touch.clientY);
                 
@@ -2114,6 +2182,21 @@
                 const deltaY = currentPos.y - touchStartPos.y;
                 const deltaX = currentPos.x - touchStartPos.x;
                 
+                // Handle ship dragging
+                if (isDraggingShip) {
+                    const ship = document.getElementById('ship');
+                    const gameBoard = document.getElementById('gameBoard');
+                    const newShipPosition = screenToShipPosition(touch.clientX);
+                    const maxLeft = gameBoard.clientWidth - ship.clientWidth;
+                    
+                    // Clamp to board boundaries
+                    const clampedPosition = Math.max(0, Math.min(maxLeft, newShipPosition));
+                    ship.style.left = clampedPosition + 'px';
+                    
+                    console.log(`Ship dragged to position: ${clampedPosition}px`);
+                    return; // Don't process other touch events when dragging ship
+                }
+                
                 // Check for downward swipe in game board
                 const zone = getTouchZone(touch.clientX, touch.clientY);
                 if (zone === 'gameBoard' && deltaY > 30 && Math.abs(deltaX) < 50) {
@@ -2130,7 +2213,7 @@
                     }
                 }
                 
-                // NEW: Check for horizontal swipes anywhere on screen
+                // NEW: Check for horizontal swipes anywhere on screen (only if not dragging ship)
                 if (Math.abs(deltaX) > 40 && Math.abs(deltaY) < 30) {
                     if (deltaX > 0 && !isSwipeRight) {
                         // Swipe right - move ship right
@@ -2159,6 +2242,24 @@
                 if (!gameRunning || gamePaused) return;
                 
                 e.preventDefault();
+                
+                // Handle ship drag completion
+                if (isDraggingShip) {
+                    isDraggingShip = false;
+                    const ship = document.getElementById('ship');
+                    
+                    // Reset ship visual feedback
+                    ship.style.transform = 'scale(1)';
+                    ship.style.boxShadow = '0 0 10px #00ffff';
+                    
+                    console.log('Ship drag completed');
+                    
+                    // Haptic feedback if supported
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(30);
+                    }
+                    return;
+                }
                 
                 // Stop continuous firing
                 if (continuousFireTimer) {

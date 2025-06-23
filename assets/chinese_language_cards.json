@@ -23,9 +23,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "goodbye, farewell",
-        "thank you very much",
-        "excuse me, sorry"
+        "zài jiàn",
+        "xiè xie",
+        "duì bù qǐ"
       ],
       "explanation": "Most common Chinese greeting, literally means 'you good'",
       "tags": [
@@ -51,9 +51,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "you're welcome",
-        "please, go ahead",
-        "hello, good morning"
+        "bù kè qi",
+        "qǐng jìn",
+        "nǐ hǎo"
       ],
       "explanation": "Essential polite expression used frequently in daily conversation",
       "tags": [
@@ -79,9 +79,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "good morning, hello",
-        "welcome, come in",
-        "thank you, thanks"
+        "zǎo shàng hǎo",
+        "huān yíng",
+        "xiè xie"
       ],
       "explanation": "Common farewell meaning 'again see', used when parting",
       "tags": [
@@ -107,9 +107,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "thank you very much",
-        "you're welcome, no problem",
-        "hello, good evening"
+        "fēi cháng gǎn xiè",
+        "bù kè qi",
+        "wǎn shàng hǎo"
       ],
       "explanation": "Polite apology used when making mistakes or asking for forgiveness",
       "tags": [
@@ -135,9 +135,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "no, not correct",
-        "maybe, perhaps",
-        "I don't know"
+        "bù shì",
+        "kě néng",
+        "wǒ bù zhī dào"
       ],
       "explanation": "Formal way to confirm or agree with something",
       "tags": [
@@ -163,9 +163,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "yes, correct",
-        "maybe, possibly",
-        "I agree"
+        "shì de",
+        "yě xǔ",
+        "wǒ tóng yì"
       ],
       "explanation": "Common negative response, literally 'not is'",
       "tags": [
@@ -191,9 +191,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "two (2)",
-        "ten (10)",
-        "zero (0)"
+        "èr",
+        "shí",
+        "líng"
       ],
       "explanation": "First number in Chinese counting system",
       "tags": [
@@ -219,9 +219,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "four (4)",
-        "hundred (100)",
-        "thousand (1000)"
+        "sì",
+        "yī bǎi",
+        "yī qiān"
       ],
       "explanation": "Base unit for counting in tens in Chinese",
       "tags": [
@@ -247,9 +247,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "you (singular)",
-        "he, him",
-        "we, us"
+        "nǐ",
+        "tā",
+        "wǒ men"
       ],
       "explanation": "First person singular pronoun",
       "tags": [
@@ -275,9 +275,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "I, me",
-        "they, them",
-        "she, her"
+        "wǒ",
+        "tā men",
+        "tā"
       ],
       "explanation": "Second person singular pronoun",
       "tags": [
@@ -303,9 +303,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "bad, poor",
-        "big, large",
-        "small, little"
+        "huài",
+        "dà",
+        "xiǎo"
       ],
       "explanation": "Common positive adjective used in many contexts",
       "tags": [
@@ -331,9 +331,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "who",
-        "where",
-        "when"
+        "shuí",
+        "nǎ lǐ",
+        "shén me shí hou"
       ],
       "explanation": "Basic question word for asking about things",
       "tags": [
@@ -359,9 +359,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "age",
-        "address",
-        "phone number"
+        "nián líng",
+        "dì zhǐ",
+        "diàn huà hào mǎ"
       ],
       "explanation": "Used when asking or telling someone's name",
       "tags": [
@@ -387,9 +387,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to have, possess",
-        "to go, leave",
-        "to come, arrive"
+        "yǒu",
+        "qù",
+        "lái"
       ],
       "explanation": "Copula verb linking subject and predicate",
       "tags": [
@@ -415,9 +415,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "Japan (country)",
-        "America (country)",
-        "Korea (country)"
+        "rì běn",
+        "měi guó",
+        "hán guó"
       ],
       "explanation": "Literally means 'middle country' or 'central nation'",
       "tags": [
@@ -443,9 +443,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "animal, creature",
-        "thing, object",
-        "place, location"
+        "dòng wù",
+        "dōng xī",
+        "dì fāng"
       ],
       "explanation": "Basic noun for human being, also used in compounds",
       "tags": [
@@ -471,9 +471,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "small, little",
-        "long, lengthy",
-        "short, brief"
+        "xiǎo",
+        "cháng",
+        "duǎn"
       ],
       "explanation": "Common adjective for size, opposite of xiǎo (small)",
       "tags": [
@@ -499,9 +499,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "big, large",
-        "tall, high",
-        "wide, broad"
+        "dà",
+        "gāo",
+        "kuān"
       ],
       "explanation": "Common adjective for size, opposite of dà (big)",
       "tags": [
@@ -527,9 +527,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "tea",
-        "coffee",
-        "juice"
+        "chá",
+        "kā fēi",
+        "guǒ zhī"
       ],
       "explanation": "Basic necessity, also used in many compound words",
       "tags": [
@@ -555,9 +555,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to drink",
-        "to cook",
-        "to taste"
+        "hē",
+        "zuò fàn",
+        "cháng"
       ],
       "explanation": "Basic verb for eating food",
       "tags": [
@@ -583,9 +583,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "yesterday",
-        "tomorrow",
-        "this week"
+        "zuó tiān",
+        "míng tiān",
+        "zhè ge xīng qī"
       ],
       "explanation": "Time expression for the current day",
       "tags": [
@@ -611,9 +611,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "yesterday",
-        "today",
-        "next week"
+        "zuó tiān",
+        "jīn tiān",
+        "xià ge xīng qī"
       ],
       "explanation": "Time expression for the day after today",
       "tags": [
@@ -639,9 +639,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "enemy, foe",
-        "stranger",
-        "colleague"
+        "dí rén",
+        "mò shēng rén",
+        "tóng shì"
       ],
       "explanation": "Common term for friend, literally 'friend friend'",
       "tags": [
@@ -667,9 +667,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to hate",
-        "to like",
-        "to want"
+        "hèn",
+        "xǐ huān",
+        "xiǎng yào"
       ],
       "explanation": "Strong emotion verb, deeper than xǐ huān (like)",
       "tags": [
@@ -695,9 +695,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to dislike, hate",
-        "to love deeply",
-        "to need, require"
+        "tǎo yàn",
+        "shēn ài",
+        "xū yào"
       ],
       "explanation": "Common verb for expressing preference or enjoyment",
       "tags": [
@@ -723,9 +723,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "school, academy",
-        "office, workplace",
-        "store, shop"
+        "xué xiào",
+        "bàn gōng shì",
+        "shāng diàn"
       ],
       "explanation": "Can mean both physical home and family unit",
       "tags": [
@@ -751,9 +751,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "father, dad",
-        "sister",
-        "grandmother"
+        "bà ba",
+        "jiě jie",
+        "nǎi nai"
       ],
       "explanation": "Informal term for mother, repeated 'ma' sound",
       "tags": [
@@ -779,9 +779,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "mother, mom",
-        "brother",
-        "grandfather"
+        "mā ma",
+        "gē ge",
+        "yé ye"
       ],
       "explanation": "Informal term for father, repeated 'ba' sound",
       "tags": [
@@ -807,9 +807,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "student, pupil",
-        "doctor, physician",
-        "driver, chauffeur"
+        "xué shēng",
+        "yī shēng",
+        "sī jī"
       ],
       "explanation": "Respectful term for teacher, literally 'old master'",
       "tags": [
@@ -835,9 +835,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "teacher, instructor",
-        "worker, employee",
-        "manager, boss"
+        "lǎo shī",
+        "gōng rén",
+        "jīng lǐ"
       ],
       "explanation": "Person who studies, literally 'study/learn life'",
       "tags": [
@@ -863,9 +863,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "credit card",
-        "bank account",
-        "wallet, purse"
+        "xìn yòng kǎ",
+        "yín háng zhàng hù",
+        "qián bāo"
       ],
       "explanation": "General term for money or currency",
       "tags": [
@@ -891,9 +891,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "where is it?",
-        "what time is it?",
-        "who is that?"
+        "zài nǎ lǐ",
+        "jǐ diǎn",
+        "nà shì shuí"
       ],
       "explanation": "Common phrase for asking price when shopping",
       "tags": [
@@ -919,9 +919,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "cheap, inexpensive",
-        "free, no cost",
-        "valuable, precious"
+        "pián yi",
+        "miǎn fèi",
+        "zhēn guì"
       ],
       "explanation": "Adjective describing high price",
       "tags": [
@@ -947,9 +947,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "expensive, costly",
-        "moderate price",
-        "on sale, discounted"
+        "guì",
+        "zhōng děng jià gé",
+        "dǎ zhé"
       ],
       "explanation": "Adjective describing low price, opposite of guì",
       "tags": [
@@ -975,9 +975,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to have, possess",
-        "to give, offer",
-        "to buy, purchase"
+        "yǒu",
+        "gěi",
+        "mǎi"
       ],
       "explanation": "Modal verb expressing desire or necessity",
       "tags": [
@@ -1003,9 +1003,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to want, desire",
-        "to be, exist as",
-        "to give, provide"
+        "xiǎng yào",
+        "shì",
+        "gěi"
       ],
       "explanation": "Verb for possession and existence",
       "tags": [
@@ -1031,9 +1031,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "have, possess",
-        "want to have",
-        "used to have"
+        "yǒu",
+        "xiǎng yǒu",
+        "céng jīng yǒu"
       ],
       "explanation": "Negative form of yǒu, very common expression",
       "tags": [
@@ -1059,9 +1059,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "here",
-        "there",
-        "everywhere"
+        "zhè lǐ",
+        "nà lǐ",
+        "suǒ yǒu dì fāng"
       ],
       "explanation": "Question word for asking location",
       "tags": [
@@ -1087,9 +1087,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "there, that place",
-        "where, which place",
-        "everywhere, all places"
+        "nà lǐ",
+        "nǎ lǐ",
+        "dào chù"
       ],
       "explanation": "Indicates current or nearby location",
       "tags": [
@@ -1115,9 +1115,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to come",
-        "to stay",
-        "to return"
+        "lái",
+        "liú",
+        "huí"
       ],
       "explanation": "Basic verb for movement away from speaker",
       "tags": [
@@ -1143,9 +1143,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to go",
-        "to leave",
-        "to stay"
+        "qù",
+        "lí kāi",
+        "dāi"
       ],
       "explanation": "Basic verb for movement toward speaker",
       "tags": [
@@ -1171,9 +1171,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "blue (color)",
-        "green (color)",
-        "yellow (color)"
+        "lán sè",
+        "lǜ sè",
+        "huáng sè"
       ],
       "explanation": "Lucky color in Chinese culture",
       "tags": [
@@ -1199,9 +1199,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "black (color)",
-        "gray (color)",
-        "brown (color)"
+        "hēi sè",
+        "huī sè",
+        "zōng sè"
       ],
       "explanation": "Basic color, associated with mourning in traditional culture",
       "tags": [
@@ -1227,9 +1227,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "must, have to",
-        "should, ought to",
-        "want to, wish to"
+        "bì xū",
+        "yīng gāi",
+        "xiǎng yào"
       ],
       "explanation": "Modal verb expressing ability or possibility",
       "tags": [
@@ -1255,9 +1255,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to listen, hear",
-        "to read, look at",
-        "to write, record"
+        "tīng",
+        "kàn",
+        "xiě"
       ],
       "explanation": "Basic verb for verbal communication",
       "tags": [
@@ -1283,9 +1283,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "English language",
-        "Japanese language",
-        "Korean language"
+        "yīng wén",
+        "rì wén",
+        "hán wén"
       ],
       "explanation": "The Chinese language, literally 'middle writing'",
       "tags": [
@@ -1311,9 +1311,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "to forget",
-        "to remember",
-        "to confuse"
+        "wàng",
+        "jì",
+        "hú tú"
       ],
       "explanation": "Verb for comprehension, often used as 'tīng dǒng' (understand by listening)",
       "tags": [
@@ -1339,9 +1339,9 @@
       "progression_level": 1,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "not, never",
-        "maybe, perhaps",
-        "slightly, a bit"
+        "bù",
+        "yě xǔ",
+        "yǒu diǎn"
       ],
       "explanation": "Common intensifier adverb used before adjectives",
       "tags": [
@@ -1367,9 +1367,9 @@
       "progression_level": 3,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "very, quite",
-        "not enough",
-        "just right"
+        "hěn",
+        "bù gòu",
+        "gāng hǎo"
       ],
       "explanation": "Adverb indicating excess, often paired with 'le'",
       "tags": [
@@ -1395,9 +1395,9 @@
       "progression_level": 2,
       "mastery_threshold": 3,
       "wrong_answers": [
-        "sad, unhappy",
-        "angry, upset",
-        "worried, anxious"
+        "nán guò",
+        "shēng qì",
+        "dān xīn"
       ],
       "explanation": "Common emotion adjective, used in birthday wishes",
       "tags": [
