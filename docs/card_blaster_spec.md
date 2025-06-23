@@ -727,23 +727,53 @@ function handleUnifiedInput(inputType, action) {
 
 ## Level Selection System
 
-### Start Screen Level Selection
-- **Starting Level Dropdown**: Choose initial level (1, 8, 15, 22, 29, 36)
-- **Strategic Levels**: Selected levels represent key progression points
-  - Level 1: Beginner (single question)
-  - Level 8: Intermediate start
-  - Level 15: Advanced start (2 questions)
-  - Level 22: Expert level
-  - Level 29: Master (3 questions)
-  - Level 36: Grandmaster level
-- **Life Calculation**: Starting lives = 5 + (selected level - 1), maximum 10
-- **Progression Level**: Automatically calculated using `min(7, floor(1 + (level - 1) * 0.15))`
+### Dynamic Level Selection Based on Deck Metadata
+- **Automatic Discovery**: Level options populate dynamically based on selected deck's `available_levels` metadata
+- **Deck-Specific Levels**: Each deck defines its own progression levels and maximum level
+- **Adaptive Interface**: Level dropdown updates when deck selection changes
+- **Metadata Integration**: Uses `max_level` and `available_levels` from deck JSON metadata
+
+### Available Deck Examples
+**Data Science Fundamentals**: 2 levels (1-2)
+- Level 1: Beginner (1 Question)
+- Level 2: Basic (1 Question)
+
+**Data Science Advanced**: 10 levels (1-10)
+- Level 1: Beginner (1 Question)
+- Levels 2-3: Basic (1 Question)
+- Levels 4-6: Intermediate (1-2 Questions)
+- Levels 7-8: Advanced (2 Questions)
+- Levels 9-10: Expert (2-3 Questions)
+
+**Chinese Language Basics**: 3 levels (1-3)
+- Level 1: Beginner (1 Question)
+- Level 2: Basic (1 Question)
+- Level 3: Intermediate (1 Question)
+
+### Dynamic Level Labeling
+- **Descriptive Names**: Automatically generated based on level relative to deck maximum
+  - Level 1: Always "Beginner"
+  - 1-30% of max: "Basic"
+  - 31-60% of max: "Intermediate"  
+  - 61-80% of max: "Advanced"
+  - 81%+ of max: "Expert"
+- **Question Count Indicators**: Shows expected simultaneous questions based on level
+  - Levels 1-14: "(1 Question)"
+  - Levels 15-28: "(2 Questions)"
+  - Levels 29+: "(3 Questions)"
+
+### Deck Discovery System
+- **Automatic Detection**: Scans `assets/` directory for `*_cards.json` files
+- **Metadata Validation**: Verifies deck structure and metadata completeness
+- **Fallback Support**: Provides default options if discovery fails
+- **Live Updates**: Deck and level dropdowns populate on game load
 
 ### Level Selection Integration
+- **Smart Initialization**: First available level selected by default
 - **Persistent Choice**: Selected level maintained until restart from beginning
-- **Card Pool Access**: Higher starting levels access advanced card progression levels
+- **Card Pool Access**: Higher starting levels access appropriate progression level cards
 - **Difficulty Scaling**: Appropriate target speed and question count for selected level
-- **Experience Matching**: Allows players to start at skill-appropriate difficulty
+- **Deck Compatibility**: Level selection respects each deck's unique structure
 
 ---
 

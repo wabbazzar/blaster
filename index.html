@@ -853,8 +853,7 @@
             <div class="deck-selector">
                 <label for="deckSelect" class="deck-label">Select Learning Deck:</label>
                 <select id="deckSelect" class="deck-dropdown">
-                    <option value="data_science_cards.json">Data Science Fundamentals</option>
-                    <option value="chinese_language_cards.json">Chinese Language Basics</option>
+                    <!-- Options populated dynamically -->
                 </select>
             </div>
             
@@ -862,12 +861,7 @@
             <div class="level-selector">
                 <label for="levelSelect" class="level-label">Starting Level:</label>
                 <select id="levelSelect" class="level-dropdown">
-                    <option value="1">Level 1 - Beginner (Single Question)</option>
-                    <option value="8">Level 8 - Intermediate Start</option>
-                    <option value="15">Level 15 - Advanced Start (2 Questions)</option>
-                    <option value="22">Level 22 - Expert</option>
-                    <option value="29">Level 29 - Master (3 Questions)</option>
-                    <option value="36">Level 36 - Grandmaster</option>
+                    <!-- Options populated dynamically based on selected deck -->
                 </select>
             </div>
             
@@ -976,7 +970,7 @@
             // Setup restart buttons
             setupRestartButtons();
             
-            // Setup deck selection
+            // Setup deck selection and populate dropdowns
             setupDeckSelection();
             
             console.log('Game initialized');
@@ -1345,6 +1339,7 @@
         async function discoverAvailableDecks() {
             const potentialDecks = [
                 'data_science_cards.json',
+                'data_science_advanced_cards.json',
                 'chinese_language_cards.json'
             ];
             
@@ -1361,7 +1356,7 @@
                                 metadata: deckData.metadata,
                                 cards: deckData.cards
                             });
-                            console.log(`Discovered deck: ${deckData.metadata.deck_name}`);
+                            console.log(`Discovered deck: ${deckData.metadata.deck_name} (${deckData.metadata.max_level} levels)`);
                         }
                     }
                 } catch (error) {
@@ -1369,7 +1364,84 @@
                 }
             }
             
+            // Update deck dropdown
+            updateDeckDropdown();
+            
             return availableDecks;
+        }
+        
+        // Update deck dropdown with discovered decks
+        function updateDeckDropdown() {
+            const deckSelect = document.getElementById('deckSelect');
+            deckSelect.innerHTML = ''; // Clear existing options
+            
+            availableDecks.forEach(deck => {
+                const option = document.createElement('option');
+                option.value = deck.filename;
+                option.textContent = `${deck.metadata.deck_name} (${deck.metadata.card_count} cards, ${deck.metadata.max_level} levels)`;
+                deckSelect.appendChild(option);
+            });
+            
+            // Set up deck change handler to update level selection
+            deckSelect.addEventListener('change', updateLevelSelection);
+            
+            // Initialize level selection for first deck
+            if (availableDecks.length > 0) {
+                updateLevelSelection();
+            }
+        }
+        
+        // Update level dropdown based on selected deck
+        function updateLevelSelection() {
+            const deckSelect = document.getElementById('deckSelect');
+            const levelSelect = document.getElementById('levelSelect');
+            const selectedDeckFilename = deckSelect.value;
+            
+            // Find the selected deck
+            const selectedDeck = availableDecks.find(d => d.filename === selectedDeckFilename);
+            if (!selectedDeck) return;
+            
+            // Clear existing level options
+            levelSelect.innerHTML = '';
+            
+            // Populate level options based on deck's available levels
+            const availableLevels = selectedDeck.metadata.available_levels || [];
+            const maxLevel = selectedDeck.metadata.max_level || 1;
+            
+            // Create level options with descriptive labels
+            availableLevels.forEach(level => {
+                const option = document.createElement('option');
+                option.value = level;
+                
+                // Create descriptive level labels
+                let description = '';
+                if (level === 1) {
+                    description = 'Beginner';
+                } else if (level <= Math.ceil(maxLevel * 0.3)) {
+                    description = 'Basic';
+                } else if (level <= Math.ceil(maxLevel * 0.6)) {
+                    description = 'Intermediate';
+                } else if (level <= Math.ceil(maxLevel * 0.8)) {
+                    description = 'Advanced';
+                } else {
+                    description = 'Expert';
+                }
+                
+                // Add question count indicator
+                let questionCount = '';
+                if (level <= 14) {
+                    questionCount = '(1 Question)';
+                } else if (level <= 28) {
+                    questionCount = '(2 Questions)';
+                } else {
+                    questionCount = '(3 Questions)';
+                }
+                
+                option.textContent = `Level ${level} - ${description} ${questionCount}`;
+                levelSelect.appendChild(option);
+            });
+            
+            console.log(`Updated level selection for ${selectedDeck.metadata.deck_name}: ${availableLevels.length} levels available`);
         }
         
         async function loadSelectedDeck(deckFilename, startingLevel = 1) {
@@ -2539,66 +2611,40 @@
             console.log('Touch controls initialized (Tetris-style zones)');
         }
 
-        // Setup deck selection
-        function setupDeckSelection() {
+        // Setup deck selection functionality
+        async function setupDeckSelection() {
+            try {
+                // Discover available decks and populate dropdowns
+                await discoverAvailableDecks();
+                console.log('Deck selection setup complete');
+            } catch (error) {
+                console.error('Error setting up deck selection:', error);
+                // Add fallback options if discovery fails
+                addFallbackDeckOptions();
+            }
+        }
+        
+        // Add fallback deck options if discovery fails
+        function addFallbackDeckOptions() {
             const deckSelect = document.getElementById('deckSelect');
+            const levelSelect = document.getElementById('levelSelect');
             
-            deckSelect.addEventListener('change', async function() {
-                const selectedDeckFilename = deckSelect.value;
-                console.log(`Deck changed to: ${selectedDeckFilename}`);
-                
-                // Stop current game if running
-                if (gameRunning) {
-                    gameRunning = false;
-                    gamePaused = false;
-                    
-                    // Clear intervals
-                    if (projectileInterval) clearInterval(projectileInterval);
-                    if (targetInterval) clearInterval(targetInterval);
-                    
-                    // Clear targets and projectiles
-                    targets.forEach(target => target.element.remove());
-                    targets = [];
-                    projectiles.forEach(proj => proj.element.remove());
-                    projectiles = [];
-                }
-                
-                // Load the new deck
-                try {
-                    await discoverAvailableDecks();
-                    await loadSelectedDeck(selectedDeckFilename, 1);
-                    
-                    // Reset game state for new deck
-                    score = 0;
-                    level = 1;
-                    lives = 5;
-                    currentProgressionLevel = 1;
-                    
-                    // Update displays
-                    updateScore(0);
-                    updateLevel(1);
-                    updateLivesDisplay();
-                    
-                    console.log(`Successfully loaded new deck: ${selectedDeckFilename}`);
-                    
-                    // Restart game with new deck
-                    if (document.getElementById('startOverlay').classList.contains('active')) {
-                        // Game hasn't started yet, just load the new deck
-                        console.log('Deck ready for when game starts');
-                    } else {
-                        // Game was running, restart with new deck
-                        startGame();
-                    }
-                    
-                } catch (error) {
-                    console.error('Failed to load new deck:', error);
-                }
-            });
+            // Add basic fallback deck
+            deckSelect.innerHTML = '<option value="data_science_cards.json">Data Science Fundamentals (Fallback)</option>';
+            
+            // Add basic level options
+            levelSelect.innerHTML = `
+                <option value="1">Level 1 - Beginner (1 Question)</option>
+                <option value="2">Level 2 - Basic (1 Question)</option>
+            `;
+            
+            console.log('Added fallback deck selection options');
         }
 
-        // Initialize game when page loads
+        // Initialize the game when page loads
         window.addEventListener('load', () => {
             initializeGame();
+            console.log('Card Blaster loaded with dynamic deck selection');
         });
 
         // Phase 2 & 3: Keyboard controls (arrow keys + spacebar)
