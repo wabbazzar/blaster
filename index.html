@@ -1431,8 +1431,14 @@
                     description = 'Expert';
                 }
                 
-                // Add question count indicator - All deck levels have 1 question per card
-                let questionCount = '(1 Question)';
+                // Count actual cards available for this level
+                const cardsInLevel = selectedDeck.cards.filter(card => 
+                    card.progression_level === level
+                ).length;
+                
+                const questionCount = cardsInLevel === 1 ? 
+                    `(${cardsInLevel} Question)` : 
+                    `(${cardsInLevel} Questions)`;
                 
                 option.textContent = `Level ${level} - ${description} ${questionCount}`;
                 levelSelect.appendChild(option);
