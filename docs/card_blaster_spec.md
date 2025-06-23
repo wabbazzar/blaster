@@ -188,28 +188,45 @@ Level 42: 3.05 pixels/frame
 - **Fallback Grid**: Use grid positioning if random placement fails after 20 attempts
 - **Position Validation**: Verify left + width ≤ board width for all targets
 
-#### Target Positioning Algorithm
+#### Target Positioning Algorithm (Enhanced Anti-Overlap System)
 ```javascript
-// Boundary-safe positioning
-left = Math.random() * (boardWidth - targetWidth);
-top = -targetHeight - Math.random() * 100; // Above screen with variation
+// Enhanced boundary-safe positioning with increased separation
+const minSeparation = 140; // Increased from 100px to 140px
+left = Math.random() * (boardWidth - targetWidth - 20) + 10; // 10px margins
+top = -targetHeight - Math.random() * 150; // Start above visible board
 
-// Overlap detection
+// Dual overlap detection system
 centerDistance = sqrt((x1-x2)² + (y1-y2)²);
-validPosition = centerDistance >= 120px;
+validPosition = centerDistance >= minSeparation;
 
-// Fallback grid (if random fails)
-gridX = targetIndex % 4; // 4 columns maximum
-left = gridX * (boardWidth / 4) + 10px;
-top = -targetHeight - floor(targetIndex / 4) * 80px;
+// Additional rectangular bounds check
+if (left < existingLeft + targetWidth + 20 &&
+    left + targetWidth + 20 > existingLeft &&
+    top < existingTop + targetHeight + 20 &&
+    top + targetHeight + 20 > existingTop) {
+    validPosition = false;
+}
+
+// Enhanced fallback grid system
+maxColumns = floor((boardWidth - 40) / (targetWidth + 30));
+left = gridX * (targetWidth + 30) + 20; // 20px from edges
+top = -targetHeight - (gridY * 80); // 80px vertical spacing above board
 ```
 
-#### Critical Bug Prevention Checks
-1. **Clustering Prevention**: Enforce minimum 120px separation between all targets
-2. **Boundary Enforcement**: Ensure left + targetWidth ≤ boardWidth for all spawns  
-3. **Timing Control**: Use 800ms delays between spawns, never simultaneous
-4. **Overlap Detection**: Check distance between centers before placement
-5. **Fallback Safety**: Grid positioning when random placement fails
+#### Enhanced Anti-Overlap Features
+1. **Increased Separation**: Minimum 140px between target centers (up from 100px)
+2. **Dual Detection**: Both circular distance and rectangular bounds checking
+3. **Improved Margins**: 10px margins from board edges prevent edge clustering
+4. **Above-Board Spawning**: Targets spawn above visible area for natural entry
+5. **Enhanced Grid Fallback**: Better spacing and positioning when random fails
+6. **Extended Attempts**: Up to 50 positioning attempts (increased from 30)
+
+#### Critical Bug Prevention Checks (Enhanced)
+1. **Multi-Layer Overlap Prevention**: Circular distance + rectangular bounds checking
+2. **Enhanced Boundary Enforcement**: 10px margins prevent edge spawning issues
+3. **Improved Timing Control**: 800ms delays with staggered above-board entry
+4. **Robust Fallback System**: Grid positioning with 30px spacing between targets
+5. **Extended Validation**: More attempts with better positioning algorithms
 
 #### Testing Requirements
 - **Position Verification**: Test all targets spawn within game board boundaries
@@ -685,6 +702,48 @@ function handleUnifiedInput(inputType, action) {
 - **Engagement**: Mathematical progression provides clear advancement goals
 - **Skill Development**: Balances memorization with hand-eye coordination
 - **Completion**: 42 levels provide substantial learning journey through full dataset
+
+## Enhanced Game Over System
+
+### Game Over Screen Features
+- **Comprehensive Stats Display**: Final score, level reached, and lives lost indication
+- **Multiple Restart Options**: 
+  - **Restart Current Level**: Keep progress, restart at same level with appropriate lives
+  - **Restart From Beginning**: Complete reset, return to Level 1
+  - **Back to Menu**: Return to start screen for deck/level selection
+- **Visual Polish**: Tron-themed buttons with color coding (cyan/orange/gray)
+
+### Restart Current Level Logic
+- **Lives Reset**: Starting lives (5) + level bonus - 1, maximum 10 lives
+- **Score Reset**: Score returns to 0 but level progress maintained
+- **Card Progress Preserved**: Learned cards and progression states remain
+- **Level Maintained**: Player continues from their current level
+
+### Restart From Beginning Logic
+- **Complete Reset**: All game state returns to initial values
+- **Level 1 Start**: Game begins at Level 1 regardless of previous progress
+- **Card Learning Reset**: All card states and learned cards cleared
+- **Standard Lives**: 5 lives as initial game start
+
+## Level Selection System
+
+### Start Screen Level Selection
+- **Starting Level Dropdown**: Choose initial level (1, 8, 15, 22, 29, 36)
+- **Strategic Levels**: Selected levels represent key progression points
+  - Level 1: Beginner (single question)
+  - Level 8: Intermediate start
+  - Level 15: Advanced start (2 questions)
+  - Level 22: Expert level
+  - Level 29: Master (3 questions)
+  - Level 36: Grandmaster level
+- **Life Calculation**: Starting lives = 5 + (selected level - 1), maximum 10
+- **Progression Level**: Automatically calculated using `min(7, floor(1 + (level - 1) * 0.15))`
+
+### Level Selection Integration
+- **Persistent Choice**: Selected level maintained until restart from beginning
+- **Card Pool Access**: Higher starting levels access advanced card progression levels
+- **Difficulty Scaling**: Appropriate target speed and question count for selected level
+- **Experience Matching**: Allows players to start at skill-appropriate difficulty
 
 ---
 

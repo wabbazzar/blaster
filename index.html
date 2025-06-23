@@ -729,6 +729,91 @@
                 transform: translate(-50%, -50%) translateY(0px);
             }
         }
+
+        /* Deck and Level Selection */
+        .deck-selector, .level-selector {
+            margin: 15px 0;
+            padding: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .deck-label, .level-label {
+            display: block;
+            color: #00ffff;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .deck-dropdown, .level-dropdown {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .deck-dropdown:hover, .level-dropdown:hover,
+        .deck-dropdown:focus, .level-dropdown:focus {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 10px #00ffff;
+            outline: none;
+        }
+
+        .deck-dropdown option, .level-dropdown option {
+            background: #000;
+            color: #00ffff;
+            padding: 5px;
+        }
+
+        /* Game Over Restart Options */
+        .restart-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .start-button.secondary {
+            background: linear-gradient(45deg, #ff6600, #ff9900);
+            box-shadow: 0 0 15px #ff6600;
+        }
+
+        .start-button.secondary:hover {
+            box-shadow: 0 0 25px #ff6600;
+        }
+
+        .start-button.tertiary {
+            background: linear-gradient(45deg, #666, #999);
+            box-shadow: 0 0 15px #666;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+        }
+
+        .start-button.tertiary:hover {
+            box-shadow: 0 0 25px #666;
+        }
+
+        /* Mobile adjustments for restart options */
+        @media (max-width: 767px) {
+            .restart-options {
+                gap: 8px;
+                margin-top: 15px;
+            }
+            
+            .deck-selector, .level-selector {
+                margin: 10px 0;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -770,6 +855,19 @@
                 <select id="deckSelect" class="deck-dropdown">
                     <option value="data_science_cards.json">Data Science Fundamentals</option>
                     <option value="chinese_language_cards.json">Chinese Language Basics</option>
+                </select>
+            </div>
+            
+            <!-- Level Selection (ONLY in start screen) -->
+            <div class="level-selector">
+                <label for="levelSelect" class="level-label">Starting Level:</label>
+                <select id="levelSelect" class="level-dropdown">
+                    <option value="1">Level 1 - Beginner (Single Question)</option>
+                    <option value="8">Level 8 - Intermediate Start</option>
+                    <option value="15">Level 15 - Advanced Start (2 Questions)</option>
+                    <option value="22">Level 22 - Expert</option>
+                    <option value="29">Level 29 - Master (3 Questions)</option>
+                    <option value="36">Level 36 - Grandmaster</option>
                 </select>
             </div>
             
@@ -833,9 +931,15 @@
             <h1 class="overlay-title gameover-title">Game Over</h1>
             <div class="game-over-stats">
                 <p class="overlay-text score-text">Final Score: <span id="finalScore">0</span></p>
-                <p class="overlay-text level-text">Level: <span id="finalLevel">1</span></p>
+                <p class="overlay-text level-text">Level Reached: <span id="finalLevel">1</span></p>
+                <p class="overlay-text lives-text">Lives Lost: All ❤️</p>
             </div>
-            <button class="start-button" id="restartButton">Play Again</button>
+            
+            <div class="restart-options">
+                <button class="start-button" id="restartCurrentButton">Restart Current Level</button>
+                <button class="start-button secondary" id="restartFromBeginningButton">Restart From Beginning</button>
+                <button class="start-button tertiary" id="backToMenuButton">Back to Menu</button>
+            </div>
         </div>
     </div>
 
@@ -868,6 +972,9 @@
             
             // Setup start button
             setupStartButton();
+            
+            // Setup restart buttons
+            setupRestartButtons();
             
             // Setup deck selection
             setupDeckSelection();
@@ -1022,22 +1129,123 @@
             });
         }
         
+        // Setup restart button functionality
+        function setupRestartButtons() {
+            // Restart at current level
+            const restartCurrentButton = document.getElementById('restartCurrentButton');
+            restartCurrentButton.addEventListener('click', function() {
+                restartAtCurrentLevel();
+            });
+            restartCurrentButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                restartAtCurrentLevel();
+            });
+            
+            // Restart from beginning
+            const restartFromBeginningButton = document.getElementById('restartFromBeginningButton');
+            restartFromBeginningButton.addEventListener('click', function() {
+                restartFromBeginning();
+            });
+            restartFromBeginningButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                restartFromBeginning();
+            });
+            
+            // Back to menu
+            const backToMenuButton = document.getElementById('backToMenuButton');
+            backToMenuButton.addEventListener('click', function() {
+                backToMenu();
+            });
+            backToMenuButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                backToMenu();
+            });
+        }
+        
+        // Restart at current level (keep progress)
+        function restartAtCurrentLevel() {
+            console.log(`Restarting at Level ${level}`);
+            
+            // Hide game over overlay
+            document.getElementById('gameOverOverlay').classList.remove('active');
+            
+            // Reset only lives and current question state
+            lives = Math.min(5 + level - 1, 10); // Starting lives + level bonus
+            score = 0; // Reset score but keep level progress
+            updateLivesDisplay();
+            updateScore();
+            
+            // Keep current level and learned cards - this is the key difference
+            // Just restart with current progression
+            
+            // Start the game
+            startGameLoop();
+        }
+        
+        // Restart from beginning (reset everything)
+        function restartFromBeginning() {
+            console.log('Restarting from beginning');
+            
+            // Hide game over overlay  
+            document.getElementById('gameOverOverlay').classList.remove('active');
+            
+            // Reset all game state
+            level = 1;
+            score = 0;
+            lives = 5;
+            learnedCards.clear();
+            cardStates.clear();
+            currentProgressionLevel = 1;
+            
+            // Update displays
+            updateLevel();
+            updateScore();
+            updateLivesDisplay();
+            
+            // Start the game
+            startGameLoop();
+        }
+        
+        // Back to menu (show start screen)
+        function backToMenu() {
+            console.log('Returning to main menu');
+            
+            // Hide game over overlay
+            document.getElementById('gameOverOverlay').classList.remove('active');
+            
+            // Show start overlay
+            document.getElementById('startOverlay').classList.add('active');
+            
+            // Reset game state silently
+            gameRunning = false;
+            gamePaused = false;
+        }
+        
+        // Get selected starting level from dropdown
+        function getSelectedLevel() {
+            const levelSelect = document.getElementById('levelSelect');
+            return parseInt(levelSelect.value) || 1;
+        }
+        
         // Start game
         function startGame() {
             // Hide start overlay
             document.getElementById('startOverlay').classList.remove('active');
             
+            // Get selected starting level
+            const selectedLevel = getSelectedLevel();
+            
             // Reset game state
             gameRunning = true;
             gamePaused = false;
             score = 0;
-            level = 1;
-            lives = 5; // Reset lives
-            currentProgressionLevel = 1; // Reset progression level
+            level = selectedLevel; // Use selected level instead of always 1
+            lives = Math.min(5 + selectedLevel - 1, 10); // Starting lives + level bonus, max 10
+            currentProgressionLevel = Math.min(7, Math.floor(1 + (selectedLevel - 1) * 0.15)); // Progression level formula
             
             // Update displays
             updateScore(0);
-            updateLevel(1);
+            updateLevel(selectedLevel);
             updateLivesDisplay();
             
             // Clear existing targets and projectiles
@@ -1049,10 +1257,10 @@
             // Start game loops
             startGameLoops();
             
-            // Initialize progressive gameplay
+            // Initialize progressive gameplay with selected level
             initializeProgressiveGameplay();
             
-            console.log('Game started with progressive gameplay');
+            console.log(`Game started at Level ${selectedLevel} with ${lives} lives`);
         }
         
         // Initialize progressive gameplay system
@@ -1065,8 +1273,8 @@
                 const deckSelect = document.getElementById('deckSelect');
                 const selectedDeckFilename = deckSelect.value;
                 
-                // Load the selected deck
-                await loadSelectedDeck(selectedDeckFilename, 1);
+                // Load the selected deck with current progression level
+                await loadSelectedDeck(selectedDeckFilename, currentProgressionLevel);
             } catch (error) {
                 console.error('Error initializing progressive gameplay:', error);
                 // Fallback to default deck loading
@@ -1553,7 +1761,14 @@
             if (projectileInterval) clearInterval(projectileInterval);
             if (targetInterval) clearInterval(targetInterval);
             
-            // Will implement game over screen later
+            // Update game over overlay with stats
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalLevel').textContent = level;
+            
+            // Show game over overlay
+            document.getElementById('gameOverOverlay').classList.add('active');
+            
+            console.log(`Game Over! Final Score: ${score}, Level: ${level}`);
         }
 
         function loadNewQuestion() {
@@ -1680,21 +1895,21 @@
             const boardHeight = gameBoard.offsetHeight;
             const targetWidth = 80;
             const targetHeight = 60;
+            const minSeparation = 140; // Increased from 100px to 140px for better separation
             
-            // Find a non-overlapping position
+            // Find a non-overlapping position with improved algorithm
             let attempts = 0;
             let left, top;
             let validPosition = false;
             
-            while (!validPosition && attempts < 30) {
-                // Generate position within horizontal bounds
-                left = Math.random() * (boardWidth - targetWidth);
+            while (!validPosition && attempts < 50) { // Increased attempts from 30 to 50
+                // Generate position within horizontal bounds with better margins
+                left = Math.random() * (boardWidth - targetWidth - 20) + 10; // 10px margin from edges
                 
-                // Start targets at the very top of the game board (inside the cyan box)
-                // Position 0 is the top edge of the game board
-                top = 0; // Start exactly at the top edge of the game board
+                // Start targets above the visible game board for staggered entry
+                top = -targetHeight - Math.random() * 150; // Random height above board
                 
-                // Check for overlaps with existing targets
+                // Check for overlaps with existing targets using enhanced detection
                 validPosition = true;
                 for (let existingTarget of targets) {
                     const existingLeft = parseInt(existingTarget.element.style.left);
@@ -1706,8 +1921,17 @@
                         Math.pow(top + targetHeight/2 - (existingTop + targetHeight/2), 2)
                     );
                     
-                    // Require minimum 100px separation between centers (reduced from 120px)
-                    if (centerDistance < 100) {
+                    // Enhanced separation check with minimum distance
+                    if (centerDistance < minSeparation) {
+                        validPosition = false;
+                        break;
+                    }
+                    
+                    // Additional overlap check for rectangular bounds
+                    if (left < existingLeft + targetWidth + 20 &&
+                        left + targetWidth + 20 > existingLeft &&
+                        top < existingTop + targetHeight + 20 &&
+                        top + targetHeight + 20 > existingTop) {
                         validPosition = false;
                         break;
                     }
@@ -1716,15 +1940,17 @@
                 attempts++;
             }
             
-            // If no valid position found, use improved fallback grid position
+            // Enhanced fallback grid system if no valid position found
             if (!validPosition) {
-                const gridColumns = Math.min(4, Math.floor(boardWidth / (targetWidth + 20))); // Dynamic columns
-                const gridX = targets.length % gridColumns;
-                const gridY = Math.floor(targets.length / gridColumns);
+                const maxColumns = Math.floor((boardWidth - 40) / (targetWidth + 30)); // 30px spacing
+                const gridIndex = targets.length;
+                const gridX = gridIndex % maxColumns;
+                const gridY = Math.floor(gridIndex / maxColumns);
                 
-                left = gridX * (boardWidth / gridColumns) + 10;
-                // Grid targets start at top of game board, staggered downward
-                top = gridY * 70; // Stagger vertically by 70px from top of board
+                left = gridX * (targetWidth + 30) + 20; // 20px from left edge
+                top = -targetHeight - (gridY * 80); // Stagger vertically 80px apart, above board
+                
+                console.log(`Using grid fallback position: (${left}, ${top}) for target ${gridIndex}`);
             }
             
             const target = document.createElement('div');
@@ -1771,7 +1997,7 @@
                 answer: answer
             });
             
-            console.log(`Target created: "${answer.substring(0, 20)}..." at (${left.toFixed(1)}, ${top.toFixed(1)})`);
+            console.log(`Target created: "${answer.substring(0, 20)}..." at (${left.toFixed(1)}, ${top.toFixed(1)}) - Attempt ${attempts}`);
         }
 
         // Phase 2: Simple ship movement function
