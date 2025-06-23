@@ -1260,12 +1260,16 @@
         // Initialize progressive gameplay system
         async function initializeProgressiveGameplay() {
             try {
-                // Discover available decks
-                await discoverAvailableDecks();
+                // Only discover decks if not already discovered
+                if (availableDecks.length === 0) {
+                    await discoverAvailableDecks();
+                }
                 
-                // Get selected deck from dropdown
+                // Get selected deck from dropdown (user's choice)
                 const deckSelect = document.getElementById('deckSelect');
                 const selectedDeckFilename = deckSelect.value;
+                
+                console.log(`Starting game with selected deck: ${selectedDeckFilename}`);
                 
                 // Load the selected deck with current progression level
                 await loadSelectedDeck(selectedDeckFilename, currentProgressionLevel);
@@ -1427,15 +1431,8 @@
                     description = 'Expert';
                 }
                 
-                // Add question count indicator
-                let questionCount = '';
-                if (level <= 14) {
-                    questionCount = '(1 Question)';
-                } else if (level <= 28) {
-                    questionCount = '(2 Questions)';
-                } else {
-                    questionCount = '(3 Questions)';
-                }
+                // Add question count indicator - All deck levels have 1 question per card
+                let questionCount = '(1 Question)';
                 
                 option.textContent = `Level ${level} - ${description} ${questionCount}`;
                 levelSelect.appendChild(option);
