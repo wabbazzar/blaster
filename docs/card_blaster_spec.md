@@ -270,12 +270,14 @@ Testing Priority:
 
 ## Practice Mode System
 
-### Toggle Switch (Moved to Start Screen)
-- **Visual toggle in start overlay for practice mode on/off**
-- **Correct Answer Highlighting**: In practice mode, correct answers have distinct visual indicator
-- **Learning Aid**: Subtle glow or border around correct targets in practice mode
-- **Performance Tracking**: Separate scoring for practice vs normal mode
+#### Practice Mode Toggle (Start Screen Only)
+- **Location**: Start menu overlay only - NOT during gameplay
+- **Purpose**: Educational aid for learning new decks
+- **Visual Distinction**: 
+  - **Practice Mode ON**: Correct answer targets have subtle green glow/border
+  - **Practice Mode OFF**: Correct answers look EXACTLY identical to wrong answers (no visual distinction whatsoever)
 - **Persistent Setting**: Toggle state remembered between game sessions
+- **No Mid-Game Changes**: Once game starts, practice mode cannot be changed until restart
 
 ### Performance
 - **Frame Rate**: 60 FPS smooth gameplay
@@ -313,18 +315,39 @@ Testing Priority:
     <h1 class="overlay-title menu-title">Card Blaster</h1>
     <p class="overlay-subtitle">Learn Through Action</p>
     
+    <!-- Deck Selection (ONLY in start screen) -->
+    <div class="deck-selector">
+        <label for="deckSelect" class="deck-label">Select Learning Deck:</label>
+        <select id="deckSelect" class="deck-dropdown">
+            <option value="data_science_cards.json">Data Science Fundamentals</option>
+            <option value="chinese_language_cards.json">Chinese Language Basics</option>
+        </select>
+    </div>
+    
+    <!-- Practice Mode Toggle (ONLY in start screen) -->
+    <div class="practice-mode-container">
+        <label class="practice-toggle">
+            <input type="checkbox" id="practiceMode" />
+            <span class="practice-slider"></span>
+            <span class="practice-label">Practice Mode (Highlight Correct Answers)</span>
+        </label>
+    </div>
+    
     <div class="controls-container">
         <!-- Mobile Controls Section -->
         <div class="control-section mobile-controls">
             <div class="control-title">Touch Controls</div>
             <div class="control-item">
-                <span class="control-key">Tap Ship Area</span> → Move left/right
+                <span class="control-key">Left Zone Tap</span> → Move ship left
             </div>
             <div class="control-item">
-                <span class="control-key">Tap Screen</span> → Shoot projectiles
+                <span class="control-key">Right Zone Tap</span> → Move ship right
             </div>
             <div class="control-item">
-                <span class="control-key">Long Press Score</span> → Pause/Resume
+                <span class="control-key">Game Board Tap</span> → Fire projectiles
+            </div>
+            <div class="control-item">
+                <span class="control-key">Scoreboard Tap</span> → Pause/Resume
             </div>
         </div>
         

@@ -144,29 +144,47 @@
         }
         
         .deck-selector {
-            width: min(400px, 90vw);
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .deck-label {
+            display: block;
+            color: #00ffff;
+            font-size: 16px;
+            font-weight: bold;
             margin-bottom: 10px;
-            padding: 10px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        
+        .deck-dropdown {
+            background: rgba(0, 0, 0, 0.8);
             border: 2px solid #00ffff;
             border-radius: 8px;
-            box-shadow: 0 0 10px #00ffff;
-            background: rgba(0, 255, 255, 0.1);
-        }
-        
-        .deck-selector select {
-            width: 100%;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.8);
             color: #00ffff;
-            border: 1px solid #00ffff;
-            border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
+            padding: 10px 15px;
+            min-width: 250px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
-        .deck-selector select option {
+        .deck-dropdown:hover {
+            border-color: #ff6600;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        
+        .deck-dropdown:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+        
+        .deck-dropdown option {
             background: #000000;
             color: #00ffff;
+            padding: 8px;
         }
         
         .card-state-indicator {
@@ -649,15 +667,6 @@
     <div id="wrapper">
         <h1>Card Blaster</h1>
 
-        <!-- Deck Selection -->
-        <div class="deck-selector">
-            <label for="deckSelect" style="color: #00ffff; margin-bottom: 5px; display: block;">Select Deck:</label>
-            <select id="deckSelect">
-                <option value="data_science_cards.json">Data Science Fundamentals</option>
-                <option value="chinese_language_cards.json">Chinese Language Basics</option>
-            </select>
-        </div>
-
         <!-- Question Area -->
         <div id="questionArea">
             <div id="questionText">Question goes here</div>
@@ -686,7 +695,16 @@
         <h1 class="overlay-title menu-title">Card Blaster</h1>
         <p class="overlay-subtitle">Arcade Learning Game</p>
         
-        <!-- Practice Mode Toggle Section -->
+        <!-- Deck Selection (ONLY in start screen) -->
+        <div class="deck-selector">
+            <label for="deckSelect" class="deck-label">Select Learning Deck:</label>
+            <select id="deckSelect" class="deck-dropdown">
+                <option value="data_science_cards.json">Data Science Fundamentals</option>
+                <option value="chinese_language_cards.json">Chinese Language Basics</option>
+            </select>
+        </div>
+        
+        <!-- Practice Mode Toggle Section (ONLY in start screen) -->
         <div class="practice-mode-section">
             <div class="practice-title">Practice Mode</div>
             <div class="highlight-toggle">
@@ -1641,55 +1659,34 @@
             target.style.position = 'absolute';
             target.style.width = targetWidth + 'px';
             target.style.height = targetHeight + 'px';
-            
-            // Apply highlighting based on toggle state
-            if (isCorrect) {
-                if (highlightCorrectAnswers) {
-                    target.classList.add('correct-highlighted');
-                } else {
-                    target.classList.add('correct-normal');
-                }
-            } else {
-                target.style.background = '#ff6600';
-                target.style.border = '2px solid #00ffff';
-            }
-            
-            target.style.borderRadius = '10px';
+            target.style.borderRadius = '50%';
             target.style.left = left + 'px';
             target.style.top = top + 'px';
             target.style.display = 'flex';
             target.style.alignItems = 'center';
             target.style.justifyContent = 'center';
-            target.style.border = `2px solid ${isCorrect ? '#00ff00' : '#ff0000'}`;
-            target.style.borderRadius = '50%';
-            target.style.background = isCorrect ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)';
-            target.style.color = isCorrect ? '#00ff00' : '#ff0000';
             target.style.fontFamily = 'Courier New, monospace';
             target.style.fontSize = '10px';
             target.style.fontWeight = 'bold';
             target.style.textAlign = 'center';
             target.style.userSelect = 'none';
             target.style.cursor = 'pointer';
-            target.style.boxShadow = `0 0 10px ${isCorrect ? '#00ff00' : '#ff0000'}`;
             target.style.zIndex = '10';
             target.textContent = answer;
             
-            // Add card state indicator if this is the correct answer
-            if (isCorrect && currentQuestion && cardStates.has(currentQuestion.id)) {
-                const cardState = cardStates.get(currentQuestion.id);
-                const indicator = document.createElement('div');
-                indicator.className = 'card-state-indicator';
-                
-                // Set indicator color based on card state
-                if (cardState.state === 'new') {
-                    indicator.classList.add('card-state-new');
-                } else if (cardState.state === 'struggling') {
-                    indicator.classList.add('card-state-struggling');
-                } else if (cardState.state === 'learned') {
-                    indicator.classList.add('card-state-learned');
-                }
-                
-                target.appendChild(indicator);
+            // Apply correct practice mode styling
+            if (isCorrect && highlightCorrectAnswers) {
+                // Practice mode ON - highlight correct answers in green
+                target.style.border = '2px solid #00ff00';
+                target.style.background = 'rgba(0, 255, 0, 0.1)';
+                target.style.color = '#00ff00';
+                target.style.boxShadow = '0 0 10px #00ff00';
+            } else {
+                // Practice mode OFF OR wrong answer - use red styling for ALL
+                target.style.border = '2px solid #ff0000';
+                target.style.background = 'rgba(255, 0, 0, 0.1)';
+                target.style.color = '#ff0000';
+                target.style.boxShadow = '0 0 10px #ff0000';
             }
             
             gameBoard.appendChild(target);
@@ -1902,22 +1899,25 @@
                 const wrapperRect = wrapper.getBoundingClientRect();
                 const gameBoardRect = gameBoard.getBoundingClientRect();
                 
+                // Add 10px gap between zones to prevent overlap
+                const zonePadding = 10;
+                
                 return {
-                    // Left zone: left side of screen up to game board
+                    // Left zone: left side of screen up to game board (with gap)
                     leftZone: {
                         left: wrapperRect.left,
-                        right: gameBoardRect.left,
-                        top: wrapperRect.top,
-                        bottom: wrapperRect.bottom
+                        right: gameBoardRect.left - zonePadding,
+                        top: gameBoardRect.top,
+                        bottom: gameBoardRect.bottom
                     },
-                    // Right zone: right side of screen from game board edge
+                    // Right zone: right side of screen from game board edge (with gap)
                     rightZone: {
-                        left: gameBoardRect.right,
+                        left: gameBoardRect.right + zonePadding,
                         right: wrapperRect.right,
-                        top: wrapperRect.top,
-                        bottom: wrapperRect.bottom
+                        top: gameBoardRect.top,
+                        bottom: gameBoardRect.bottom
                     },
-                    // Game board zone: the actual game area
+                    // Game board zone: the actual game area (no changes)
                     gameBoard: {
                         left: gameBoardRect.left,
                         right: gameBoardRect.right,
@@ -1931,19 +1931,19 @@
             function getTouchZone(x, y) {
                 const zones = getTouchZones();
                 
-                // Check game board first (highest priority)
+                // Check game board first (highest priority) - ONLY fires projectiles
                 if (x >= zones.gameBoard.left && x <= zones.gameBoard.right &&
                     y >= zones.gameBoard.top && y <= zones.gameBoard.bottom) {
                     return 'gameBoard';
                 }
                 
-                // Check left zone
+                // Check left zone - ONLY moves ship left
                 if (x >= zones.leftZone.left && x <= zones.leftZone.right &&
                     y >= zones.leftZone.top && y <= zones.leftZone.bottom) {
                     return 'left';
                 }
                 
-                // Check right zone
+                // Check right zone - ONLY moves ship right
                 if (x >= zones.rightZone.left && x <= zones.rightZone.right &&
                     y >= zones.rightZone.top && y <= zones.rightZone.bottom) {
                     return 'right';
