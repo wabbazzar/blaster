@@ -1970,63 +1970,18 @@
             const boardHeight = gameBoard.offsetHeight;
             const targetWidth = 80;
             const targetHeight = 60;
-            const minSeparation = 140; // Increased from 100px to 140px for better separation
             
-            // Find a non-overlapping position with improved algorithm
-            let attempts = 0;
-            let left, top;
-            let validPosition = false;
+            // Use a simple column-based layout to prevent overlaps completely
+            const columnWidth = targetWidth + 60; // 60px spacing between columns
+            const maxColumns = Math.floor(boardWidth / columnWidth);
+            const currentColumn = targets.length % maxColumns;
+            const currentRow = Math.floor(targets.length / maxColumns);
             
-            while (!validPosition && attempts < 50) { // Increased attempts from 30 to 50
-                // Generate position within horizontal bounds with better margins
-                left = Math.random() * (boardWidth - targetWidth - 20) + 10; // 10px margin from edges
-                
-                // Start targets above the visible game board for staggered entry
-                top = -targetHeight - Math.random() * 150; // Random height above board
-                
-                // Check for overlaps with existing targets using enhanced detection
-                validPosition = true;
-                for (let existingTarget of targets) {
-                    const existingLeft = parseInt(existingTarget.element.style.left);
-                    const existingTop = parseInt(existingTarget.element.style.top);
-                    
-                    // Calculate distance between centers
-                    const centerDistance = Math.sqrt(
-                        Math.pow(left + targetWidth/2 - (existingLeft + targetWidth/2), 2) +
-                        Math.pow(top + targetHeight/2 - (existingTop + targetHeight/2), 2)
-                    );
-                    
-                    // Enhanced separation check with minimum distance
-                    if (centerDistance < minSeparation) {
-                        validPosition = false;
-                        break;
-                    }
-                    
-                    // Additional overlap check for rectangular bounds
-                    if (left < existingLeft + targetWidth + 20 &&
-                        left + targetWidth + 20 > existingLeft &&
-                        top < existingTop + targetHeight + 20 &&
-                        top + targetHeight + 20 > existingTop) {
-                        validPosition = false;
-                        break;
-                    }
-                }
-                
-                attempts++;
-            }
+            // Calculate position based on column and row
+            const left = currentColumn * columnWidth + (columnWidth - targetWidth) / 2;
+            const top = -targetHeight - 150 - (currentRow * 100); // Start well above board, stagger rows
             
-            // Enhanced fallback grid system if no valid position found
-            if (!validPosition) {
-                const maxColumns = Math.floor((boardWidth - 40) / (targetWidth + 30)); // 30px spacing
-                const gridIndex = targets.length;
-                const gridX = gridIndex % maxColumns;
-                const gridY = Math.floor(gridIndex / maxColumns);
-                
-                left = gridX * (targetWidth + 30) + 20; // 20px from left edge
-                top = -targetHeight - (gridY * 80); // Stagger vertically 80px apart, above board
-                
-                console.log(`Using grid fallback position: (${left}, ${top}) for target ${gridIndex}`);
-            }
+            console.log(`Target ${targets.length}: Column ${currentColumn}, Row ${currentRow} at (${left}, ${top})`);
             
             const target = document.createElement('div');
             target.className = 'target';
@@ -2072,7 +2027,7 @@
                 answer: answer
             });
             
-            console.log(`Target created: "${answer.substring(0, 20)}..." at (${left.toFixed(1)}, ${top.toFixed(1)}) - Attempt ${attempts}`);
+            console.log(`Target created: "${answer.substring(0, 20)}..." at (${left.toFixed(1)}, ${top.toFixed(1)}) - ${validPosition ? 'Random' : 'Grid'} placement`);
         }
 
         // Phase 2: Simple ship movement function
