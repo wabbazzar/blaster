@@ -1971,29 +1971,26 @@
             const targetWidth = 80;
             const targetHeight = 60;
             
-            // Simple approach: use the current question's answers to determine position
-            let targetColumn = 0;
-            if (currentQuestion && currentQuestion.answers) {
-                const answerIndex = currentQuestion.answers.findIndex(a => a.text === answer);
-                if (answerIndex !== -1) {
-                    targetColumn = answerIndex;
-                }
-            }
+            // Use the current number of targets to determine column position
+            // This ensures each target gets its own column
+            const targetColumn = targets.length;
             
             // Calculate available columns and position
             const columnWidth = targetWidth + 80; // 80px spacing between columns
             const maxColumns = Math.floor(boardWidth / columnWidth);
-            targetColumn = targetColumn % maxColumns;
+            
+            // Ensure we don't exceed available columns
+            const actualColumn = targetColumn % maxColumns;
             
             // Calculate horizontal position
-            const left = targetColumn * columnWidth + (columnWidth - targetWidth) / 2;
+            const left = actualColumn * columnWidth + (columnWidth - targetWidth) / 2;
             
             // Start all targets at the same height above the board with slight randomization
             const baseTop = -targetHeight - 200;
             const randomOffset = Math.random() * 50; // 0-50px random offset
             const top = baseTop - randomOffset;
             
-            console.log(`Target "${answer.substring(0, 20)}..." in column ${targetColumn} at (${left}, ${top})`);
+            console.log(`Target "${answer.substring(0, 20)}..." in column ${actualColumn} at (${left}, ${top})`);
             
             const target = document.createElement('div');
             target.className = 'target';
